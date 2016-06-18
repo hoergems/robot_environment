@@ -344,6 +344,7 @@ BOOST_PYTHON_MODULE(librobot_environment) {
     class_<RobotEnvironment, std::shared_ptr<shared::RobotEnvironment> >("RobotEnvironment", init<>())
 							   .def("getRobot", &RobotEnvironment::getRobot)
 							   .def("createManipulatorRobot", &RobotEnvironment::createManipulatorRobot)
+							   .def("createDubinRobot", &RobotEnvironment::createDubinRobot)
 							   .def("getGoalArea", &RobotEnvironment::getGoalArea)
 							   .def("loadEnvironment", &RobotEnvironment::loadEnvironment)
 							   .def("getObstacles", &RobotEnvironment::getObstaclesPy)
