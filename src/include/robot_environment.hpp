@@ -10,6 +10,8 @@
 #include <boost/foreach.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/python.hpp>
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include "BoxObstacle.hpp"
 #include "SphereObstacle.hpp"
 #include <robots/ManipulatorRobot.hpp>

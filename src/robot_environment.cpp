@@ -259,6 +259,22 @@ void RobotEnvironment::loadGoalArea(std::string &env_file) {
 	}
 }
 
+BOOST_PYTHON_MODULE(librobot_environment) {
+    using namespace boost::python;
+    
+    boost::python::type_info info = boost::python::type_id<std::vector<int>>();
+    const boost::python::converter::registration* reg_int = boost::python::converter::registry::query(info);
+    if (reg_int == NULL || (*reg_int).m_to_python == NULL)  {    
+        class_<std::vector<int> > ("v_int")
+            .def(vector_indexing_suite<std::vector<int> >());
+    }
+   
+    class_<RobotEnvironment, std::shared_ptr<shared::RobotEnvironment> >("RobotEnvironment", init<>())
+							   .def("getRobot", &RobotEnvironment::getRobot)		                       
+							   
+    ;
+}
+
 
 
 }
