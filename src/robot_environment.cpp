@@ -63,6 +63,15 @@ bool RobotEnvironment::createManipulatorRobot(std::string robot_file) {
 	return false;
 }
 
+bool RobotEnvironment::createDubinRobot(std::string robot_file) {	
+	if (file_exists(robot_file)) {
+		robot_ = std::make_shared<shared::DubinRobot>(robot_file);
+		return true;
+	}
+	
+	return false;
+}
+
 std::shared_ptr<shared::Robot> RobotEnvironment::getRobot() {
 	return robot_;
 } 

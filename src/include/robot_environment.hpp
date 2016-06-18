@@ -15,6 +15,7 @@
 #include "BoxObstacle.hpp"
 #include "SphereObstacle.hpp"
 #include <robots/ManipulatorRobot.hpp>
+#include <robots/DubinRobot.hpp>
 
 namespace shared {
 
@@ -24,9 +25,7 @@ public:
 	
 	void addObstacle(std::shared_ptr<Obstacle> &obstacle);
 	
-	void setRobot(std::shared_ptr<shared::Robot> &robot);
-	
-	bool createManipulatorRobot(std::string robot_file);
+	void setRobot(std::shared_ptr<shared::Robot> &robot);	
 	
 	std::shared_ptr<shared::Robot> getRobot();
 	
@@ -37,6 +36,13 @@ public:
 	std::vector<std::shared_ptr<shared::ObstacleWrapper>> getObstaclesPy();
 	
 	void getGoalArea(std::vector<double> &goal_area);
+	
+	/**
+	 * Create the robots
+	 */
+	bool createManipulatorRobot(std::string robot_file);
+	
+	bool createDubinRobot(std::string robot_file);
 	
 private:
 	std::vector<std::shared_ptr<Obstacle>> obstacles_;
