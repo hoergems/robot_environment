@@ -26,17 +26,15 @@ public:
 	
 	void setRobot(std::shared_ptr<shared::Robot> &robot);
 	
-	bool createManipulatorRobot(std::string &robot_file);
+	bool createManipulatorRobot(std::string robot_file);
 	
 	std::shared_ptr<shared::Robot> getRobot();
 	
-	void loadObstaclesXML(std::string &obstacles_file);
-	
-	void loadGoalArea(std::string &env_file); 
+	bool loadEnvironment(std::string environment_file);
 	
 	std::vector<std::shared_ptr<Obstacle>> getObstacles();
 	
-	std::vector<double> getGoalArea();
+	void getGoalArea(std::vector<double> &goal_area);
 	
 private:
 	std::vector<std::shared_ptr<Obstacle>> obstacles_;
@@ -46,6 +44,10 @@ private:
 	std::vector<double> goal_area_;
 	
 	bool file_exists(std::string &filename);
+	
+	bool loadObstaclesXML(std::string &obstacles_file);
+		
+	bool loadGoalArea(std::string &env_file); 
 	
 };
 

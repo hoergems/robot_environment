@@ -41,7 +41,7 @@ void RobotEnvironment::setRobot(std::shared_ptr<shared::Robot> &robot) {
 	robot_ = robot;
 }
 
-bool RobotEnvironment::createManipulatorRobot(std::string &robot_file) {	
+bool RobotEnvironment::createManipulatorRobot(std::string robot_file) {	
 	if (file_exists(robot_file)) {
 		robot_ = std::make_shared<shared::ManipulatorRobot>(robot_file);
 		return true;
@@ -62,7 +62,19 @@ bool RobotEnvironment::file_exists(std::string &filename) {
 	return boost::filesystem::exists(filename);
 }
 
-void RobotEnvironment::loadObstaclesXML(std::string &obstacles_file) {	
+bool RobotEnvironment::loadEnvironment(std::string environment_file) {
+	if (!loadObstaclesXML(environment_file)) {
+		return false;
+	}
+	
+	if (!loadGoalArea(environment_file)) {
+		return false;
+	}
+	
+	return true;
+}
+
+bool RobotEnvironment::loadObstaclesXML(std::string &obstacles_file) {	
 	if (!file_exists(obstacles_file)) {
 		cout << "RobotEnvironment: ERROR: Environment file '" << obstacles_file << "' doesn't exist" << endl;		
 		assert(false);		
@@ -216,11 +228,13 @@ void RobotEnvironment::loadObstaclesXML(std::string &obstacles_file) {
 	}
 }
 
-std::vector<double> RobotEnvironment::getGoalArea() {
-	return goal_area_;
+void RobotEnvironment::getGoalArea(std::vector<double> &goal_area) {	
+	for (auto &k: goal_area_) {		
+		goal_area.push_back(k);
+	}	
 }
 
-void RobotEnvironment::loadGoalArea(std::string &env_file) {
+bool RobotEnvironment::loadGoalArea(std::string &env_file) {
 	if (!file_exists(env_file)) {
 		cout << "Utils: ERROR: Environment file '" << env_file << "' doesn't exist" << endl;		
 		assert(false);		
@@ -270,7 +284,10 @@ BOOST_PYTHON_MODULE(librobot_environment) {
     }
    
     class_<RobotEnvironment, std::shared_ptr<shared::RobotEnvironment> >("RobotEnvironment", init<>())
-							   .def("getRobot", &RobotEnvironment::getRobot)		                       
+							   .def("getRobot", &RobotEnvironment::getRobot)
+							   .def("createManipulatorRobot", &RobotEnvironment::createManipulatorRobot)
+							   .def("getGoalArea", &RobotEnvironment::getGoalArea)
+							   .def("loadEnvironment", &RobotEnvironment::loadEnvironment)
 							   
     ;
 }
