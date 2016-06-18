@@ -26,8 +26,8 @@ struct ObstacleStruct {
 };
 
 RobotEnvironment::RobotEnvironment():
-	obstacles_()
-
+	obstacles_(),
+    goal_area_()
 {
 	
 }
@@ -48,7 +48,8 @@ void RobotEnvironment::loadObstaclesXML(std::string &obstacles_file) {
 	if (!file_exists(obstacles_file)) {
 		cout << "RobotEnvironment: ERROR: Environment file '" << obstacles_file << "' doesn't exist" << endl;		
 		assert(false);		
-	}	
+	}
+	obstacles_.clear();
 	std::vector<ObstacleStruct> obstacles;	
 	TiXmlDocument xml_doc;	
     xml_doc.LoadFile(obstacles_file);    
@@ -194,6 +195,49 @@ void RobotEnvironment::loadObstaclesXML(std::string &obstacles_file) {
 	    }
 	    
 	    obstacles_[obstacles_.size() - 1]->setStandardColor(obstacles[i].d_color, obstacles[i].a_color);
+	}
+}
+
+std::vector<double> RobotEnvironment::getGoalArea() {
+	return goal_area_;
+}
+
+void RobotEnvironment::loadGoalArea(std::string &env_file) {
+	if (!file_exists(env_file)) {
+		cout << "Utils: ERROR: Environment file '" << env_file << "' doesn't exist" << endl;		
+		assert(false);		
+	}
+	goal_area_.clear();
+	TiXmlDocument xml_doc;	
+	xml_doc.LoadFile(env_file);    
+    TiXmlElement *env_xml = xml_doc.FirstChildElement("Environment");
+	for (TiXmlElement* obst_xml = env_xml->FirstChildElement("KinBody"); obst_xml; obst_xml = obst_xml->NextSiblingElement("KinBody"))
+	{
+		std::string name(obst_xml->Attribute("name"));
+		if (name == "GoalArea") { 
+			TiXmlElement *body_xml = obst_xml->FirstChildElement("Body");			
+			if (body_xml) {
+				TiXmlElement *geom_xml = body_xml->FirstChildElement("Geom");
+				if (geom_xml) {
+					TiXmlElement *trans_xml = geom_xml->FirstChildElement("Translation");
+					if (trans_xml) {
+						const char* xyz_str = trans_xml->GetText();
+						std::vector<std::string> pieces;						
+						boost::split( pieces, xyz_str, boost::is_any_of(" "));
+						for (unsigned int i = 0; i < pieces.size(); ++i) {
+						    if (pieces[i] != "") { 
+						        goal_area_.push_back(boost::lexical_cast<double>(pieces[i].c_str()));
+							}
+						}
+					}
+					TiXmlElement *radius_xml = geom_xml->FirstChildElement("Radius");
+					if (radius_xml) {
+						const char* rad_str = radius_xml->GetText();
+						goal_area_.push_back(boost::lexical_cast<double>(radius_xml->GetText()));
+					}
+				}				
+			}
+		}
 	}
 }
 

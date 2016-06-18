@@ -23,10 +23,16 @@ public:
 	
 	void loadObstaclesXML(std::string &obstacles_file);
 	
+	void loadGoalArea(std::string &env_file); 
+	
 	std::vector<std::shared_ptr<Obstacle>> getObstacles();
+	
+	std::vector<double> getGoalArea();
 	
 private:
 	std::vector<std::shared_ptr<Obstacle>> obstacles_;
+	
+	std::vector<double> goal_area_;
 	
 	bool file_exists(std::string &filename);
 	
