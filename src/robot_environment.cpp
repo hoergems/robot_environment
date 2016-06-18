@@ -2,6 +2,19 @@
 
 namespace shared {
 
+template<class T>
+struct VecToList
+{
+    static PyObject* convert(const std::vector<T>& vec)
+    {
+        boost::python::list* l = new boost::python::list();
+        for(size_t i = 0; i < vec.size(); i++)
+            (*l).append(vec[i]);
+
+        return l->ptr();
+    }
+};
+
 struct TerrainStruct {
     std::string name;
     double velocityDamping;
@@ -54,8 +67,20 @@ std::shared_ptr<shared::Robot> RobotEnvironment::getRobot() {
 	return robot_;
 } 
 
-std::vector<std::shared_ptr<Obstacle>> RobotEnvironment::getObstacles() {
-	return obstacles_;
+void RobotEnvironment::getObstacles(std::vector<std::shared_ptr<shared::Obstacle> > &obstacles) {
+	for (auto &k: obstacles_) {
+		obstacles.push_back(k);
+	}
+	
+}
+
+std::vector<std::shared_ptr<shared::ObstacleWrapper>> RobotEnvironment::getObstaclesPy() {
+	std::vector<std::shared_ptr<shared::ObstacleWrapper>> obstacles;
+	for (size_t i = 0; i < obstacles_.size(); i++) {
+		obstacles.push_back(std::static_pointer_cast<shared::ObstacleWrapper>(obstacles_[i]));
+	}
+	
+	return obstacles;	
 }
 
 bool RobotEnvironment::file_exists(std::string &filename) {
@@ -274,7 +299,12 @@ bool RobotEnvironment::loadGoalArea(std::string &env_file) {
 }
 
 BOOST_PYTHON_MODULE(librobot_environment) {
-    using namespace boost::python;
+    #include "include/Terrain.hpp"
+    using namespace boost::python;    
+
+    bool (ObstacleWrapper::*in_collision_d)(boost::python::list&) = &ObstacleWrapper::in_collision_discrete;
+    bool (ObstacleWrapper::*in_collision_c)(boost::python::list&) = &ObstacleWrapper::in_collision_continuous;
+    bool (ObstacleWrapper::*in_collision_p)(std::vector<double>&) = &ObstacleWrapper::in_collision_point;
     
     boost::python::type_info info = boost::python::type_id<std::vector<int>>();
     const boost::python::converter::registration* reg_int = boost::python::converter::registry::query(info);
@@ -282,12 +312,32 @@ BOOST_PYTHON_MODULE(librobot_environment) {
         class_<std::vector<int> > ("v_int")
             .def(vector_indexing_suite<std::vector<int> >());
     }
+    
+    class_<std::vector<std::shared_ptr<shared::ObstacleWrapper>> > ("v_obstacle")
+                .def(vector_indexing_suite<std::vector<std::shared_ptr<shared::ObstacleWrapper>> >());
+    to_python_converter<std::vector<std::shared_ptr<shared::ObstacleWrapper>, std::allocator<std::shared_ptr<shared::ObstacleWrapper>> >, 
+                VecToList<std::shared_ptr<shared::ObstacleWrapper>> >();
+    register_ptr_to_python<std::shared_ptr<shared::ObstacleWrapper>>();
+    
+    class_<ObstacleWrapper, boost::noncopyable>("Obstacle", init<std::string, Terrain>())         
+             .def("inCollisionDiscrete", in_collision_d)
+             .def("inCollisionContinuous", in_collision_c)
+    		 .def("inCollisionPoint", in_collision_p)
+             .def("isTraversable", &ObstacleWrapper::isTraversable)
+    		 .def("getExternalForce", &ObstacleWrapper::getExternalForce)
+    		 .def("createCollisionObject", boost::python::pure_virtual(&ObstacleWrapper::createCollisionObject))
+    		 .def("getName", &ObstacleWrapper::getName)
+    		 .def("getStandardDiffuseColor", &ObstacleWrapper::getStandardDiffuseColor)
+    		 .def("getStandardAmbientColor", &ObstacleWrapper::getStandardAmbientColor)
+    		 .def("distance", &ObstacleWrapper::distancePy)
+        ;
    
     class_<RobotEnvironment, std::shared_ptr<shared::RobotEnvironment> >("RobotEnvironment", init<>())
 							   .def("getRobot", &RobotEnvironment::getRobot)
 							   .def("createManipulatorRobot", &RobotEnvironment::createManipulatorRobot)
 							   .def("getGoalArea", &RobotEnvironment::getGoalArea)
 							   .def("loadEnvironment", &RobotEnvironment::loadEnvironment)
+							   .def("getObstacles", &RobotEnvironment::getObstaclesPy)
 							   
     ;
 }

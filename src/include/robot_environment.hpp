@@ -32,7 +32,9 @@ public:
 	
 	bool loadEnvironment(std::string environment_file);
 	
-	std::vector<std::shared_ptr<Obstacle>> getObstacles();
+	void getObstacles(std::vector<std::shared_ptr<shared::Obstacle> > &obstacles);
+	
+	std::vector<std::shared_ptr<shared::ObstacleWrapper>> getObstaclesPy();
 	
 	void getGoalArea(std::vector<double> &goal_area);
 	
