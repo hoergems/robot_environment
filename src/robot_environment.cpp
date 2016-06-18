@@ -27,7 +27,8 @@ struct ObstacleStruct {
 
 RobotEnvironment::RobotEnvironment():
 	obstacles_(),
-    goal_area_()
+    goal_area_(),
+    robot_(nullptr)
 {
 	
 }
@@ -35,6 +36,23 @@ RobotEnvironment::RobotEnvironment():
 void RobotEnvironment::addObstacle(std::shared_ptr<Obstacle> &obstacle) {
 	obstacles_.push_back(obstacle);
 }
+
+void RobotEnvironment::setRobot(std::shared_ptr<shared::Robot> &robot) {
+	robot_ = robot;
+}
+
+bool RobotEnvironment::createManipulatorRobot(std::string &robot_file) {
+	if (!file_exists(robot_file)) {
+		robot_ = std::make_shared<shared::ManipulatorRobot>(robot_file);
+		return true;
+	}
+	
+	return false;
+}
+
+std::shared_ptr<shared::Robot> RobotEnvironment::getRobot() {
+	return robot_;
+} 
 
 std::vector<std::shared_ptr<Obstacle>> RobotEnvironment::getObstacles() {
 	return obstacles_;

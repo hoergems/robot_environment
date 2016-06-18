@@ -12,6 +12,7 @@
 #include <boost/filesystem.hpp>
 #include "BoxObstacle.hpp"
 #include "SphereObstacle.hpp"
+#include <robots/ManipulatorRobot.hpp>
 
 namespace shared {
 
@@ -20,6 +21,12 @@ public:
 	RobotEnvironment();
 	
 	void addObstacle(std::shared_ptr<Obstacle> &obstacle);
+	
+	void setRobot(std::shared_ptr<shared::Robot> &robot);
+	
+	bool createManipulatorRobot(std::string &robot_file);
+	
+	std::shared_ptr<shared::Robot> getRobot();
 	
 	void loadObstaclesXML(std::string &obstacles_file);
 	
@@ -31,6 +38,8 @@ public:
 	
 private:
 	std::vector<std::shared_ptr<Obstacle>> obstacles_;
+	
+	std::shared_ptr<shared::Robot> robot_;
 	
 	std::vector<double> goal_area_;
 	

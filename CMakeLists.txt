@@ -65,6 +65,16 @@ if(PKG_CONFIG_FOUND)
     include_directories(${TINYXML_INCLUDE_DIRS})    
 endif()
 
+############################# LOAD ROBOTS #############################
+if(PKG_CONFIG_FOUND)    
+    pkg_check_modules(ROBOTS robots)
+    if(NOT ROBOTS_FOUND)
+       message(FATAL_ERROR "ROBOTS could not be found")
+    endif()
+    include_directories(${ROBOTS_INCLUDE_DIRS})
+    link_directories(${ROBOTS_LIBRARY_DIRS})     
+endif()
+
 add_library(robot_environment SHARED 
             ${CMAKE_CURRENT_SOURCE_DIR}/src/robot_environment.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/src/Obstacle.cpp
@@ -76,7 +86,8 @@ target_link_libraries (robot_environment
                        ${Boost_LIBRARIES}
                        ${PYTHON_LIBRARIES}                       
                        ${FCL_LIBRARIES}
-                       ${TINYXML_LIBRARIES})
+                       ${TINYXML_LIBRARIES}
+                       ${ROBOTS_LIBRARIES})
                        
 set(pkg_conf_file_in "${CMAKE_CURRENT_SOURCE_DIR}/robot_environment.pc.in")
 set(pkg_conf_file_out "${CMAKE_CURRENT_BINARY_DIR}/robot_environment.pc")
