@@ -5,6 +5,7 @@
 #include <fstream>
 #include <dirent.h>
 #include <tinyxml.h>
+#include <Eigen/Dense>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/foreach.hpp>
@@ -12,10 +13,13 @@
 #include <boost/filesystem.hpp>
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+#include <boost/random.hpp>
+#include <boost/random/random_device.hpp>
 #include "BoxObstacle.hpp"
 #include "SphereObstacle.hpp"
 #include <robots/ManipulatorRobot.hpp>
 #include <robots/DubinRobot.hpp>
+#include "mult_normal.hpp"
 
 namespace shared {
 
@@ -44,6 +48,13 @@ public:
 	
 	bool createDubinRobot(std::string robot_file);
 	
+	std::shared_ptr<shared::EigenMultivariateNormal<double>> createDistribution(Eigen::MatrixXd &mean, 
+			                                                                     Eigen::MatrixXd &covariance_matrix);
+	
+	void setProcessDistribution(std::shared_ptr<shared::EigenMultivariateNormal<double>> &process_distribution);
+	
+	void setObservationDistribution(std::shared_ptr<shared::EigenMultivariateNormal<double>> &observation_distribution);
+	
 private:
 	std::vector<std::shared_ptr<Obstacle>> obstacles_;
 	
@@ -55,7 +66,13 @@ private:
 	
 	bool loadObstaclesXML(std::string &obstacles_file);
 		
-	bool loadGoalArea(std::string &env_file); 
+	bool loadGoalArea(std::string &env_file);
+	
+	boost::mt19937 generator_;
+	
+	std::shared_ptr<shared::EigenMultivariateNormal<double>> process_distribution_;
+	
+	std::shared_ptr<shared::EigenMultivariateNormal<double>> observation_distribution_;
 	
 };
 

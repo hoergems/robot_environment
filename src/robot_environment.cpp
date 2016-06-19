@@ -41,9 +41,29 @@ struct ObstacleStruct {
 RobotEnvironment::RobotEnvironment():
 	obstacles_(),
     goal_area_(),
-    robot_(nullptr)
+    robot_(nullptr),
+    process_distribution_(nullptr),
+    observation_distribution_(nullptr)
 {
-	
+	boost::random_device rd;
+	generator_ = boost::mt19937(rd());	
+}
+
+std::shared_ptr<shared::EigenMultivariateNormal<double>> RobotEnvironment::createDistribution(Eigen::MatrixXd &mean, Eigen::MatrixXd &covariance_matrix) {
+	std::shared_ptr<shared::EigenMultivariateNormal<double>> distribution = 
+			std::make_shared<shared::EigenMultivariateNormal<double>>(generator_);
+	//process_distribution_ = std::make_shared<shared::EigenMultivariateNormal<double>>(generator_);
+	distribution->setMean(mean);
+	distribution->setCovar(covariance_matrix);
+	return distribution;
+}
+
+void RobotEnvironment::setProcessDistribution(std::shared_ptr<shared::EigenMultivariateNormal<double>> &process_distribution) {
+	process_distribution_ = process_distribution;
+}
+
+void RobotEnvironment::setObservationDistribution(std::shared_ptr<shared::EigenMultivariateNormal<double>> &observation_distribution) {
+	observation_distribution_ = observation_distribution;
 }
 
 void RobotEnvironment::addObstacle(std::shared_ptr<Obstacle> &obstacle) {

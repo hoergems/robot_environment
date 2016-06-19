@@ -25,7 +25,7 @@ if(PKG_CONFIG_FOUND)
 endif()
 
 ############################# LOAD BOOST #############################
-find_package(Boost ${BOOST_MIN_VERSION} REQUIRED COMPONENTS python system thread timer)
+find_package(Boost ${BOOST_MIN_VERSION} REQUIRED COMPONENTS python system thread timer random)
 if (NOT Boost_FOUND)
     set(Boost_INCLUDE_DIRS "${BOOST_INCLUDE_DIRS}")
     IF ( NOT Boost_INCLUDE_DIRS )
@@ -100,4 +100,5 @@ install(FILES ${INCLUDE_DIR}/Obstacle.hpp  DESTINATION include/robot_environment
 install(FILES ${INCLUDE_DIR}/BoxObstacle.hpp  DESTINATION include/robot_environment)
 install(FILES ${INCLUDE_DIR}/SphereObstacle.hpp  DESTINATION include/robot_environment)
 install(FILES ${INCLUDE_DIR}/Terrain.hpp  DESTINATION include/robot_environment)
+install(FILES ${INCLUDE_DIR}/mult_normal.hpp  DESTINATION include/robot_environment)
 install(FILES "${pkg_conf_file_out}" DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/ COMPONENT pkgconfig)
