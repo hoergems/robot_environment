@@ -59,6 +59,8 @@ public:
 	
 	std::shared_ptr<shared::EigenMultivariateNormal<double>> getObservationDistribution();
 	
+	std::shared_ptr<boost::mt19937> getRandomGenerator();
+	
 private:
 	std::vector<std::shared_ptr<Obstacle>> obstacles_;
 	
@@ -72,7 +74,7 @@ private:
 		
 	bool loadGoalArea(std::string &env_file);
 	
-	boost::mt19937 generator_;
+	std::shared_ptr<boost::mt19937> generator_;
 	
 	std::shared_ptr<shared::EigenMultivariateNormal<double>> process_distribution_;
 	

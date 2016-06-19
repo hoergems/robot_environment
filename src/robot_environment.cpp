@@ -43,15 +43,16 @@ RobotEnvironment::RobotEnvironment():
     goal_area_(),
     robot_(nullptr),
     process_distribution_(nullptr),
-    observation_distribution_(nullptr)
+    observation_distribution_(nullptr),
+    generator_(nullptr)
 {
 	boost::random_device rd;
-	generator_ = boost::mt19937(rd());	
+	generator_ = std::make_shared<boost::mt19937>(rd());	
 }
 
 std::shared_ptr<shared::EigenMultivariateNormal<double>> RobotEnvironment::createDistribution(Eigen::MatrixXd &mean, Eigen::MatrixXd &covariance_matrix) {
 	std::shared_ptr<shared::EigenMultivariateNormal<double>> distribution = 
-			std::make_shared<shared::EigenMultivariateNormal<double>>(generator_);
+			std::make_shared<shared::EigenMultivariateNormal<double>>(*(generator_.get()));
 	//process_distribution_ = std::make_shared<shared::EigenMultivariateNormal<double>>(generator_);
 	distribution->setMean(mean);
 	distribution->setCovar(covariance_matrix);
@@ -72,6 +73,10 @@ std::shared_ptr<shared::EigenMultivariateNormal<double>> RobotEnvironment::getPr
 	
 std::shared_ptr<shared::EigenMultivariateNormal<double>> RobotEnvironment::getObservationDistribution() {
 	return observation_distribution_;
+}
+
+std::shared_ptr<boost::mt19937> RobotEnvironment::getRandomGenerator() {
+	return generator_;
 }
 
 void RobotEnvironment::addObstacle(std::shared_ptr<Obstacle> &obstacle) {
