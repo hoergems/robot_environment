@@ -49,11 +49,15 @@ public:
 	bool createDubinRobot(std::string robot_file);
 	
 	std::shared_ptr<shared::EigenMultivariateNormal<double>> createDistribution(Eigen::MatrixXd &mean, 
-			                                                                     Eigen::MatrixXd &covariance_matrix);
+			                                                                    Eigen::MatrixXd &covariance_matrix);
 	
 	void setProcessDistribution(std::shared_ptr<shared::EigenMultivariateNormal<double>> &process_distribution);
 	
 	void setObservationDistribution(std::shared_ptr<shared::EigenMultivariateNormal<double>> &observation_distribution);
+	
+	std::shared_ptr<shared::EigenMultivariateNormal<double>> getProcessDistribution();
+	
+	std::shared_ptr<shared::EigenMultivariateNormal<double>> getObservationDistribution();
 	
 private:
 	std::vector<std::shared_ptr<Obstacle>> obstacles_;

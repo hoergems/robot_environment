@@ -66,6 +66,14 @@ void RobotEnvironment::setObservationDistribution(std::shared_ptr<shared::EigenM
 	observation_distribution_ = observation_distribution;
 }
 
+std::shared_ptr<shared::EigenMultivariateNormal<double>> RobotEnvironment::getProcessDistribution() {
+	return process_distribution_;
+}
+	
+std::shared_ptr<shared::EigenMultivariateNormal<double>> RobotEnvironment::getObservationDistribution() {
+	return observation_distribution_;
+}
+
 void RobotEnvironment::addObstacle(std::shared_ptr<Obstacle> &obstacle) {
 	obstacles_.push_back(obstacle);
 }
