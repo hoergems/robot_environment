@@ -44,10 +44,23 @@ RobotEnvironment::RobotEnvironment():
     robot_(nullptr),
     process_distribution_(nullptr),
     observation_distribution_(nullptr),
-    generator_(nullptr)
+    generator_(nullptr),
+	robot_path_(""),
+	environment_path_("")
 {
 	boost::random_device rd;
 	generator_ = std::make_shared<boost::mt19937>(rd());	
+}
+
+std::shared_ptr<RobotEnvironment> RobotEnvironment::clone() {
+	std::shared_ptr<RobotEnvironment> env = std::make_shared<RobotEnvironment>();
+	env->createManipulatorRobot(robot_path_);
+	env->loadEnvironment(environment_path_);
+	env->setControlDuration(control_duration_);
+	env->setSimulationStepSize(simulation_step_size_);
+	env->setProcessDistribution(process_distribution_);
+	env->setObservationDistribution(observation_distribution_);
+	return env;
 }
 
 std::shared_ptr<shared::EigenMultivariateNormal<double>> RobotEnvironment::createDistribution(Eigen::MatrixXd &mean, Eigen::MatrixXd &covariance_matrix) {
@@ -90,6 +103,7 @@ void RobotEnvironment::setRobot(std::shared_ptr<shared::Robot> &robot) {
 bool RobotEnvironment::createManipulatorRobot(std::string robot_file) {	
 	if (file_exists(robot_file)) {
 		robot_ = std::make_shared<shared::ManipulatorRobot>(robot_file);
+		robot_path_ = robot_file;
 		return true;
 	}
 	
@@ -99,6 +113,7 @@ bool RobotEnvironment::createManipulatorRobot(std::string robot_file) {
 bool RobotEnvironment::createDubinRobot(std::string robot_file) {	
 	if (file_exists(robot_file)) {
 		robot_ = std::make_shared<shared::DubinRobot>(robot_file);
+		robot_path_ = robot_file;
 		return true;
 	}
 	
@@ -154,6 +169,7 @@ bool RobotEnvironment::loadEnvironment(std::string environment_file) {
 		return false;
 	}
 	
+	environment_path_ = environment_file;
 	return true;
 }
 
@@ -309,6 +325,36 @@ bool RobotEnvironment::loadObstaclesXML(std::string &obstacles_file) {
 	    
 	    obstacles_[obstacles_.size() - 1]->setStandardColor(obstacles[i].d_color, obstacles[i].a_color);
 	}
+}
+
+std::vector<std::vector<double>> RobotEnvironment::loadGoalStatesFromFile(std::string filename) {
+	std::vector<std::vector<double>> gs;
+	        std::ifstream file;
+	        try {
+	            file.open(filename);
+	        }
+	        catch (std::ios_base::failure& e) {
+	            std::cerr << e.what() << '\n';
+	            sleep(5);
+	        }
+	        
+	        double dub_val;
+	        std::string line;
+	               
+	        while (std::getline(file, line))
+	        {                      
+	            std::istringstream sin(line);
+	            std::vector<double> angles; 
+	            while (sin >> dub_val) {
+	                angles.push_back(dub_val);                
+	            }
+	            
+	            gs.push_back(angles);            
+	        }
+	        file.clear();
+	        file.seekg(0, file.beg);
+	        file.close();
+	        return gs; 
 }
 
 void RobotEnvironment::getGoalArea(std::vector<double> &goal_area) {	

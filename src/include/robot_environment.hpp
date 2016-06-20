@@ -35,6 +35,8 @@ public:
 	
 	bool loadEnvironment(std::string environment_file);
 	
+	std::vector<std::vector<double>> loadGoalStatesFromFile(std::string filename);
+	
 	void getObstacles(std::vector<std::shared_ptr<shared::Obstacle> > &obstacles);
 	
 	std::vector<std::shared_ptr<shared::ObstacleWrapper>> getObstaclesPy();
@@ -69,7 +71,13 @@ public:
 	
 	double getSimulationStepSize() const;
 	
+	std::shared_ptr<RobotEnvironment> clone();
+	
 private:
+	std::string robot_path_;
+	
+	std::string environment_path_;
+	
 	double simulation_step_size_;
 	
 	double control_duration_;
