@@ -109,6 +109,22 @@ std::shared_ptr<shared::Robot> RobotEnvironment::getRobot() {
 	return robot_;
 } 
 
+void RobotEnvironment::setControlDuration(double control_duration) {
+	control_duration_ = control_duration;
+}
+	
+void RobotEnvironment::setSimulationStepSize(double simulation_step_size) {
+	simulation_step_size_ = simulation_step_size;
+}
+	
+double RobotEnvironment::getControlDuration() const {
+	return control_duration_;
+}
+	
+double RobotEnvironment::getSimulationStepSize() const {
+	return simulation_step_size_;
+}
+
 void RobotEnvironment::getObstacles(std::vector<std::shared_ptr<shared::Obstacle> > &obstacles) {
 	for (auto &k: obstacles_) {
 		obstacles.push_back(k);

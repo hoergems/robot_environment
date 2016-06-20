@@ -61,7 +61,19 @@ public:
 	
 	std::shared_ptr<boost::mt19937> getRandomGenerator();
 	
+	void setControlDuration(double control_duration);
+	
+	void setSimulationStepSize(double simulation_step_size);
+	
+	double getControlDuration() const;
+	
+	double getSimulationStepSize() const;
+	
 private:
+	double simulation_step_size_;
+	
+	double control_duration_;
+	
 	std::vector<std::shared_ptr<Obstacle>> obstacles_;
 	
 	std::shared_ptr<shared::Robot> robot_;
