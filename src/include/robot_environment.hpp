@@ -46,6 +46,8 @@ public:
 	/**
 	 * Create the robots
 	 */
+	template <class RobotType> bool createRobot(std::string robot_file);
+	
 	bool createManipulatorRobot(std::string robot_file);
 	
 	bool createDubinRobot(std::string robot_file);

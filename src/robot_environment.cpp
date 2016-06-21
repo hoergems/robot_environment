@@ -100,6 +100,16 @@ void RobotEnvironment::setRobot(std::shared_ptr<shared::Robot> &robot) {
 	robot_ = robot;
 }
 
+template <class RobotType> bool RobotEnvironment::createRobot(std::string robot_file) {
+	if (file_exists(robot_file)) {
+		robot_ = std::make_shared<RobotType>(robot_file);
+		robot_path_ = robot_file;
+		return true;
+	}
+	
+	return false;
+}
+
 bool RobotEnvironment::createManipulatorRobot(std::string robot_file) {	
 	if (file_exists(robot_file)) {
 		robot_ = std::make_shared<shared::ManipulatorRobot>(robot_file);
