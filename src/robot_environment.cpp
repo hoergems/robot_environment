@@ -169,7 +169,7 @@ bool RobotEnvironment::loadEnvironment(std::string environment_file) {
 		return false;
 	}
 	
-	environment_path_ = environment_file;
+	environment_path_ = environment_file;	
 	return true;
 }
 
@@ -409,6 +409,7 @@ BOOST_PYTHON_MODULE(librobot_environment) {
     bool (ObstacleWrapper::*in_collision_d)(boost::python::list&) = &ObstacleWrapper::in_collision_discrete;
     bool (ObstacleWrapper::*in_collision_c)(boost::python::list&) = &ObstacleWrapper::in_collision_continuous;
     bool (ObstacleWrapper::*in_collision_p)(std::vector<double>&) = &ObstacleWrapper::in_collision_point;
+    
     
     boost::python::type_info info = boost::python::type_id<std::vector<int>>();
     const boost::python::converter::registration* reg_int = boost::python::converter::registry::query(info);
