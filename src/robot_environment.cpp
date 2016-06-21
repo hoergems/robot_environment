@@ -46,7 +46,8 @@ RobotEnvironment::RobotEnvironment():
     observation_distribution_(nullptr),
     generator_(nullptr),
 	robot_path_(""),
-	environment_path_("")
+	environment_path_(""),
+	goal_states_()
 {
 	boost::random_device rd;
 	generator_ = std::make_shared<boost::mt19937>(rd());	
@@ -60,6 +61,7 @@ std::shared_ptr<RobotEnvironment> RobotEnvironment::clone() {
 	env->setSimulationStepSize(simulation_step_size_);
 	env->setProcessDistribution(process_distribution_);
 	env->setObservationDistribution(observation_distribution_);
+	env->setGoalStates(goal_states_);
 	return env;
 }
 
@@ -337,8 +339,26 @@ bool RobotEnvironment::loadObstaclesXML(std::string &obstacles_file) {
 	}
 }
 
+void RobotEnvironment::setGoalStates(std::vector<std::vector<double>> &goal_states) {
+	goal_states_ = goal_states;
+}
+
+std::vector<std::vector<double>> RobotEnvironment::getGoalStates() const {
+	return goal_states_;
+}
+
+void RobotEnvironment::makeObservation(std::vector<double> &state, std::vector<double> &observation) const {
+	observation.clear();	
+	Eigen::MatrixXd sample(state.size(), 1);
+	observation_distribution_->nextSample(sample);
+	for (size_t i = 0; i < state.size(); i++) {
+		observation.push_back(state[i] + sample(i));
+	}	
+}
+
 std::vector<std::vector<double>> RobotEnvironment::loadGoalStatesFromFile(std::string filename) {
-	std::vector<std::vector<double>> gs;
+	goal_states_.clear();
+	
 	        std::ifstream file;
 	        try {
 	            file.open(filename);
@@ -359,12 +379,13 @@ std::vector<std::vector<double>> RobotEnvironment::loadGoalStatesFromFile(std::s
 	                angles.push_back(dub_val);                
 	            }
 	            
-	            gs.push_back(angles);            
+	            goal_states_.push_back(angles);            
 	        }
 	        file.clear();
 	        file.seekg(0, file.beg);
 	        file.close();
-	        return gs; 
+	        return goal_states_;
+	 
 }
 
 void RobotEnvironment::getGoalArea(std::vector<double> &goal_area) {	

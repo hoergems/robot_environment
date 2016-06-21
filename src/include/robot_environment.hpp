@@ -48,6 +48,8 @@ public:
 	 */
 	template <class RobotType> bool createRobot(std::string robot_file);
 	
+	void makeObservation(std::vector<double> &state, std::vector<double> &observation) const ;
+	
 	bool createManipulatorRobot(std::string robot_file);
 	
 	bool createDubinRobot(std::string robot_file);
@@ -75,6 +77,10 @@ public:
 	
 	std::shared_ptr<RobotEnvironment> clone();
 	
+	void setGoalStates(std::vector<std::vector<double>> &goal_states);
+	
+	std::vector<std::vector<double>> getGoalStates() const;
+	
 private:
 	std::string robot_path_;
 	
@@ -89,6 +95,8 @@ private:
 	std::shared_ptr<shared::Robot> robot_;
 	
 	std::vector<double> goal_area_;
+	
+	std::vector<std::vector<double>> goal_states_;
 	
 	bool file_exists(std::string &filename);
 	
