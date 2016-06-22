@@ -46,7 +46,15 @@ public:
 	/**
 	 * Create the robots
 	 */
-	template <class RobotType> bool createRobot(std::string robot_file);
+	template <class RobotType> bool createRobot(std::string robot_file) {
+		if (file_exists(robot_file)) {
+			robot_ = std::make_shared<RobotType>(robot_file);
+			robot_path_ = robot_file;
+			return true;
+		}
+			
+		return false;
+	}
 	
 	void makeObservation(std::vector<double> &state, std::vector<double> &observation) const ;
 	
@@ -75,7 +83,20 @@ public:
 	
 	double getSimulationStepSize() const;
 	
-	std::shared_ptr<RobotEnvironment> clone();
+	template <class RobotType> std::shared_ptr<RobotEnvironment> clone() {
+		std::shared_ptr<RobotEnvironment> env = std::make_shared<RobotEnvironment>();
+		env->createRobot<RobotType>(robot_path_);
+		env->loadEnvironment(environment_path_);
+		env->setControlDuration(control_duration_);
+		env->setSimulationStepSize(simulation_step_size_);
+		env->setProcessDistribution(process_distribution_);
+		env->setObservationDistribution(observation_distribution_);
+		env->setGoalStates(goal_states_);	
+		std::vector<double> goal_position({goal_area_[0], goal_area_[1], goal_area_[2]});
+		double goal_radius = goal_area_[3];			
+		env->getRobot()->setGoalArea(goal_position, goal_radius);
+		return env;
+	}
 	
 	void setGoalStates(std::vector<std::vector<double>> &goal_states);
 	

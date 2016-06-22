@@ -53,7 +53,7 @@ RobotEnvironment::RobotEnvironment():
 	generator_ = std::make_shared<boost::mt19937>(rd());	
 }
 
-std::shared_ptr<RobotEnvironment> RobotEnvironment::clone() {
+/**std::shared_ptr<RobotEnvironment> RobotEnvironment::clone() {
 	std::shared_ptr<RobotEnvironment> env = std::make_shared<RobotEnvironment>();
 	env->createManipulatorRobot(robot_path_);
 	env->loadEnvironment(environment_path_);
@@ -61,9 +61,12 @@ std::shared_ptr<RobotEnvironment> RobotEnvironment::clone() {
 	env->setSimulationStepSize(simulation_step_size_);
 	env->setProcessDistribution(process_distribution_);
 	env->setObservationDistribution(observation_distribution_);
-	env->setGoalStates(goal_states_);
+	env->setGoalStates(goal_states_);	
+	std::vector<double> goal_position({goal_area_[0], goal_area_[1], goal_area_[2]});
+	double goal_radius = goal_area_[3];			
+	env->getRobot()->setGoalArea(goal_position, goal_radius);
 	return env;
-}
+}*/
 
 std::shared_ptr<shared::EigenMultivariateNormal<double>> RobotEnvironment::createDistribution(Eigen::MatrixXd &mean, Eigen::MatrixXd &covariance_matrix) {
 	std::shared_ptr<shared::EigenMultivariateNormal<double>> distribution = 
@@ -102,7 +105,7 @@ void RobotEnvironment::setRobot(std::shared_ptr<shared::Robot> &robot) {
 	robot_ = robot;
 }
 
-template <class RobotType> bool RobotEnvironment::createRobot(std::string robot_file) {
+/**template <class RobotType> bool RobotEnvironment::createRobot(std::string robot_file) {
 	if (file_exists(robot_file)) {
 		robot_ = std::make_shared<RobotType>(robot_file);
 		robot_path_ = robot_file;
@@ -110,7 +113,7 @@ template <class RobotType> bool RobotEnvironment::createRobot(std::string robot_
 	}
 	
 	return false;
-}
+}*/
 
 bool RobotEnvironment::createManipulatorRobot(std::string robot_file) {	
 	if (file_exists(robot_file)) {
