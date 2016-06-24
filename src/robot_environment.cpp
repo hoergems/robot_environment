@@ -146,7 +146,7 @@ double RobotEnvironment::getSimulationStepSize() const
 }
 
 void RobotEnvironment::getObstacles(std::vector<std::shared_ptr<shared::Obstacle> >& obstacles)
-{   
+{
     for (auto & k : obstacles_) {
         obstacles.push_back(k);
     }
@@ -171,22 +171,27 @@ bool RobotEnvironment::file_exists(std::string& filename)
 bool RobotEnvironment::loadEnvironment(std::string environment_file)
 {
     if (!loadObstaclesXML(environment_file)) {
+	cout << "RobotEnvironment: Couldn't load environment" << endl;
         return false;
     }
+    
+    cout << "RobotEnvironment: Environment loaded successfully" << endl;
 
     if (!loadGoalArea(environment_file)) {
+	cout << "RobotEnvironment: Couldn't load goal area" << endl;
         return false;
     }
 
+    cout << "RobotEnvironment: Successfully loaded goal area" << endl;
     environment_path_ = environment_file;
     return true;
 }
 
 bool RobotEnvironment::loadObstaclesXML(std::string& obstacles_file)
-{    
+{
     if (!file_exists(obstacles_file)) {
         cout << "RobotEnvironment: ERROR: Environment file '" << obstacles_file << "' doesn't exist" << endl;
-        assert(false);
+        return false;
     }
     obstacles_.clear();
     std::vector<ObstacleStruct> obstacles;
@@ -332,6 +337,8 @@ bool RobotEnvironment::loadObstaclesXML(std::string& obstacles_file)
 
         obstacles_[obstacles_.size() - 1]->setStandardColor(obstacles[i].d_color, obstacles[i].a_color);
     }
+
+    return true;
 }
 
 void RobotEnvironment::setGoalStates(std::vector<std::vector<double>>& goal_states)
@@ -396,7 +403,7 @@ bool RobotEnvironment::loadGoalArea(std::string& env_file)
 {
     if (!file_exists(env_file)) {
         cout << "Utils: ERROR: Environment file '" << env_file << "' doesn't exist" << endl;
-        assert(false);
+        return false;
     }
     goal_area_.clear();
     TiXmlDocument xml_doc;
@@ -429,6 +436,8 @@ bool RobotEnvironment::loadGoalArea(std::string& env_file)
             }
         }
     }
+    
+    return true;
 }
 
 BOOST_PYTHON_MODULE(librobot_environment)
