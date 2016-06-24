@@ -93,6 +93,11 @@ void RobotEnvironment::addObstacle(std::shared_ptr<Obstacle>& obstacle)
     obstacles_.push_back(obstacle);
 }
 
+void RobotEnvironment::setObstacles(std::vector<std::shared_ptr<Obstacle>>& obstacles)
+{
+    obstacles_ = obstacles;
+}
+
 void RobotEnvironment::setRobot(std::shared_ptr<shared::Robot>& robot)
 {
     robot_ = robot;
@@ -171,14 +176,14 @@ bool RobotEnvironment::file_exists(std::string& filename)
 bool RobotEnvironment::loadEnvironment(std::string environment_file)
 {
     if (!loadObstaclesXML(environment_file)) {
-	cout << "RobotEnvironment: Couldn't load environment" << endl;
+        cout << "RobotEnvironment: Couldn't load environment" << endl;
         return false;
     }
-    
+
     cout << "RobotEnvironment: Environment loaded successfully" << endl;
 
     if (!loadGoalArea(environment_file)) {
-	cout << "RobotEnvironment: Couldn't load goal area" << endl;
+        cout << "RobotEnvironment: Couldn't load goal area" << endl;
         return false;
     }
 
@@ -399,6 +404,11 @@ void RobotEnvironment::getGoalArea(std::vector<double>& goal_area)
     }
 }
 
+void RobotEnvironment::setGoalArea(std::vector<double>& goal_area)
+{
+    goal_area_ = goal_area;
+}
+
 bool RobotEnvironment::loadGoalArea(std::string& env_file)
 {
     if (!file_exists(env_file)) {
@@ -436,7 +446,7 @@ bool RobotEnvironment::loadGoalArea(std::string& env_file)
             }
         }
     }
-    
+
     return true;
 }
 
