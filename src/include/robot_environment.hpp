@@ -5,7 +5,6 @@
 #include <fstream>
 #include <dirent.h>
 #include <tinyxml.h>
-#include <Eigen/Dense>
 #include <boost/property_tree/xml_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/foreach.hpp>
