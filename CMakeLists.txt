@@ -21,7 +21,8 @@ if(PKG_CONFIG_FOUND)
     if(NOT PYTHON_FOUND)
        message(FATAL_ERROR "Python could not be found")
     endif()
-    include_directories(${PYTHON_INCLUDE_DIRS})    
+    include_directories(${PYTHON_INCLUDE_DIRS})
+    link_directories(${PYTHON_LIBRARY_DIRS})    
 endif()
 
 ############################# LOAD BOOST #############################
@@ -62,7 +63,8 @@ if(PKG_CONFIG_FOUND)
     if(NOT TINYXML_FOUND)
        message(FATAL_ERROR "TINYXML could not be found")
     endif()
-    include_directories(${TINYXML_INCLUDE_DIRS})    
+    include_directories(${TINYXML_INCLUDE_DIRS}) 
+    link_directories(${TINYXML_LIBRARY_DIRS})     
 endif()
 
 ############################# LOAD ROBOTS #############################
