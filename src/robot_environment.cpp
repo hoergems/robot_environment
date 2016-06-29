@@ -56,8 +56,7 @@ RobotEnvironment::RobotEnvironment():
 std::shared_ptr<shared::EigenMultivariateNormal<double>> RobotEnvironment::createDistribution(Eigen::MatrixXd& mean, Eigen::MatrixXd& covariance_matrix)
 {
     std::shared_ptr<shared::EigenMultivariateNormal<double>> distribution =
-        std::make_shared<shared::EigenMultivariateNormal<double>>(*(generator_.get()));
-    //process_distribution_ = std::make_shared<shared::EigenMultivariateNormal<double>>(generator_);
+        std::make_shared<shared::EigenMultivariateNormal<double>>(*(generator_.get()));    
     distribution->setMean(mean);
     distribution->setCovar(covariance_matrix);
     return distribution;
