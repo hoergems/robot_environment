@@ -83,6 +83,10 @@ public:
     void setControlDuration(double control_duration);
 
     void setSimulationStepSize(double simulation_step_size);
+    
+    void setGravityConstant(double gravity_constant);
+    
+    void setNewtonModel();
 
     double getControlDuration() const;
 
@@ -101,6 +105,10 @@ public:
         env->setGoalStates(goal_states_);
         env->setObstacles(obstacles_);
 	env->setGoalArea(goal_area_);
+        if (dynamic_model_ == "newton") {
+            env->getRobot()->setNewtonModel();
+        }
+        env->setGravityConstant(gravity_constant_);
         std::vector<double> goal_position( {goal_area_[0], goal_area_[1], goal_area_[2]});
         double goal_radius = goal_area_[3];
         env->getRobot()->setGoalArea(goal_position, goal_radius);
@@ -115,10 +123,14 @@ private:
     std::string robot_path_;
 
     std::string environment_path_;
+    
+    std::string dynamic_model_;
 
     double simulation_step_size_;
 
     double control_duration_;
+    
+    double gravity_constant_;
 
     std::vector<std::shared_ptr<Obstacle>> obstacles_;
 

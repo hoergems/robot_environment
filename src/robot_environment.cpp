@@ -47,7 +47,9 @@ RobotEnvironment::RobotEnvironment():
     generator_(nullptr),
     robot_path_(""),
     environment_path_(""),
-    goal_states_()
+    goal_states_(),
+    gravity_constant_(0.0),
+    dynamic_model_("lagrange")
 {
     boost::random_device rd;
     generator_ = std::make_shared<boost::mt19937>(rd());
@@ -137,6 +139,16 @@ void RobotEnvironment::setControlDuration(double control_duration)
 void RobotEnvironment::setSimulationStepSize(double simulation_step_size)
 {
     simulation_step_size_ = simulation_step_size;
+}
+
+void RobotEnvironment::setGravityConstant(double gravity_constant) {
+    gravity_constant_ = gravity_constant;
+    robot_->setGravityConstant(gravity_constant_);
+}
+
+void RobotEnvironment::setNewtonModel() {
+    dynamic_model_ = "newton";
+    robot_->setNewtonModel();
 }
 
 double RobotEnvironment::getControlDuration() const
