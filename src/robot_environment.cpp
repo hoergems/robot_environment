@@ -67,11 +67,15 @@ std::shared_ptr<shared::EigenMultivariateNormal<double>> RobotEnvironment::creat
 void RobotEnvironment::setProcessDistribution(std::shared_ptr<shared::EigenMultivariateNormal<double>>& process_distribution)
 {
     process_distribution_ = process_distribution;
+    assert(robot_ && "Can't set process distribution since robot has not been setup");
+    robot_->setStateCovarianceMatrix(process_distribution_->covar);
 }
 
 void RobotEnvironment::setObservationDistribution(std::shared_ptr<shared::EigenMultivariateNormal<double>>& observation_distribution)
 {
     observation_distribution_ = observation_distribution;
+    assert(robot_ && "Can't set observation distribution since robot has not been setup");
+    robot_->setObservationCovarianceMatrix(observation_distribution_->covar);
 }
 
 std::shared_ptr<shared::EigenMultivariateNormal<double>> RobotEnvironment::getProcessDistribution()

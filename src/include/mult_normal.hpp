@@ -30,9 +30,7 @@ class EigenMultivariateNormal: public MultivariateNormalBase
        randN; // The 0-mean unit-variance normal generator
 
     Eigen::MatrixXd rot;
-    Eigen::MatrixXd scl;
-
-    Eigen::MatrixXd mean;
+    Eigen::MatrixXd scl;    
 
 public:
     EigenMultivariateNormal(boost::mt19937 &generator)
@@ -43,7 +41,8 @@ public:
 
     void setCovar(Eigen::MatrixXd& covarMat)
     {
-        Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd >
+        covar = covarMat;
+	Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd >
            eigenSolver(covarMat);
         rot = eigenSolver.eigenvectors();
         scl = eigenSolver.eigenvalues();
@@ -64,6 +63,10 @@ public:
         }
         sampleVec = rot*sampleVec + mean;
     }
+    
+    Eigen::MatrixXd mean;
+    
+    Eigen::MatrixXd covar;
     
 };
 
