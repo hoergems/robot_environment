@@ -118,6 +118,8 @@ public:
     void setGoalStates(std::vector<std::vector<double>>& goal_states);
 
     std::vector<std::vector<double>> getGoalStates() const;
+    
+    void generateRandomScene(unsigned int& numObstacles);
 
 private:
     std::string robot_path_;

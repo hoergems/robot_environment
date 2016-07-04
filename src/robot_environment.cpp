@@ -58,7 +58,7 @@ RobotEnvironment::RobotEnvironment():
 std::shared_ptr<shared::EigenMultivariateNormal<double>> RobotEnvironment::createDistribution(Eigen::MatrixXd& mean, Eigen::MatrixXd& covariance_matrix)
 {
     std::shared_ptr<shared::EigenMultivariateNormal<double>> distribution =
-        std::make_shared<shared::EigenMultivariateNormal<double>>(*(generator_.get()));    
+        std::make_shared<shared::EigenMultivariateNormal<double>>(*(generator_.get()));
     distribution->setMean(mean);
     distribution->setCovar(covariance_matrix);
     return distribution;
@@ -145,12 +145,14 @@ void RobotEnvironment::setSimulationStepSize(double simulation_step_size)
     simulation_step_size_ = simulation_step_size;
 }
 
-void RobotEnvironment::setGravityConstant(double gravity_constant) {
+void RobotEnvironment::setGravityConstant(double gravity_constant)
+{
     gravity_constant_ = gravity_constant;
     robot_->setGravityConstant(gravity_constant_);
 }
 
-void RobotEnvironment::setNewtonModel() {
+void RobotEnvironment::setNewtonModel()
+{
     dynamic_model_ = "newton";
     robot_->setNewtonModel();
 }
@@ -167,8 +169,9 @@ double RobotEnvironment::getSimulationStepSize() const
 
 void RobotEnvironment::getObstacles(std::vector<std::shared_ptr<shared::Obstacle> >& obstacles)
 {
-    for (auto & k : obstacles_) {
-        obstacles.push_back(k);
+    obstacles.resize(obstacles_.size());
+    for (size_t i = 0; i < obstacles_.size(); i++) {
+        obstacles[i] = obstacles_[i];
     }
 
 }
@@ -354,7 +357,7 @@ bool RobotEnvironment::loadObstaclesXML(std::string& obstacles_file)
         } else {
             assert(false && "Utils: ERROR: Obstacle has an unknown type!");
         }
-
+        
         obstacles_[obstacles_.size() - 1]->setStandardColor(obstacles[i].d_color, obstacles[i].a_color);
     }
 
@@ -379,6 +382,40 @@ void RobotEnvironment::makeObservation(std::vector<double>& state, std::vector<d
     for (size_t i = 0; i < state.size(); i++) {
         observation.push_back(state[i] + sample(i));
     }
+}
+
+void RobotEnvironment::generateRandomScene(unsigned int& numObstacles)
+{
+    obstacles_.clear();
+    std::uniform_real_distribution<double> uniform_dist(-1.0, 4.0);
+    std::uniform_real_distribution<double> uniform_distZ(3.0, 6.0);
+    robot_->setupViewer(robot_path_, environment_path_);
+    for (size_t i = 0; i < numObstacles; i++) {
+	double rand_x = uniform_dist(*generator_);
+	double rand_y = uniform_dist(*generator_);
+	double rand_z = uniform_distZ(*generator_);
+	
+        shared::Terrain terrain("t" + std::to_string(i),
+                                0.0,
+                                0.0,
+                                false);
+	std::string box_name = "b" + std::to_string(i);
+        obstacles_.push_back(std::make_shared<shared::BoxObstacle>(box_name,
+                             rand_x,
+                             rand_y,
+                             rand_z,
+                             0.25,
+                             0.25,
+                             0.25,
+                             terrain));
+	std::vector<double> diffuseColor({0.5, 0.5, 0.5, 0.5});
+	obstacles_[obstacles_.size() - 1]->setStandardColor(diffuseColor, diffuseColor);
+	std::vector<double> dims({rand_x, rand_y, rand_z, 0.25, 0.25, 0.25});
+	robot_->addBox(box_name, dims);
+
+    }
+    cout << "random scene created " << obstacles_.size();
+
 }
 
 std::vector<std::vector<double>> RobotEnvironment::loadGoalStatesFromFile(std::string filename)
