@@ -384,8 +384,7 @@ void RobotEnvironment::generateRandomScene(unsigned int& numObstacles)
 {
     obstacles_.clear();
     std::uniform_real_distribution<double> uniform_dist(-1.0, 4.0);
-    std::uniform_real_distribution<double> uniform_distZ(3.0, 6.0);
-    robot_->setupViewer(robot_path_, environment_path_);
+    std::uniform_real_distribution<double> uniform_distZ(3.0, 6.0);    
     for (size_t i = 0; i < numObstacles; i++) {
 	double rand_x = uniform_dist(*generator_);
 	double rand_y = uniform_dist(*generator_);
