@@ -18,7 +18,6 @@
 #include "SphereObstacle.hpp"
 #include <robots/ManipulatorRobot.hpp>
 #include <robots/DubinRobot.hpp>
-#include "mult_normal.hpp"
 
 namespace shared
 {
@@ -47,6 +46,8 @@ public:
     void getGoalArea(std::vector<double>& goal_area);
 
     void setGoalArea(std::vector<double>& goal_area);
+    
+    void setObservationType(std::string observationType);
 
     /**
      * Create the robots
@@ -60,8 +61,6 @@ public:
 
         return false;
     }
-
-    void makeObservation(std::vector<double>& state, std::vector<double>& observation) const ;
 
     bool createManipulatorRobot(std::string robot_file);
 

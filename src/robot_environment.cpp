@@ -69,6 +69,7 @@ void RobotEnvironment::setProcessDistribution(std::shared_ptr<shared::EigenMulti
     process_distribution_ = process_distribution;
     assert(robot_ && "Can't set process distribution since robot has not been setup");
     robot_->setStateCovarianceMatrix(process_distribution_->covar);
+    robot_->setProcessDistribution(process_distribution);
 }
 
 void RobotEnvironment::setObservationDistribution(std::shared_ptr<shared::EigenMultivariateNormal<double>>& observation_distribution)
@@ -76,6 +77,7 @@ void RobotEnvironment::setObservationDistribution(std::shared_ptr<shared::EigenM
     observation_distribution_ = observation_distribution;
     assert(robot_ && "Can't set observation distribution since robot has not been setup");
     robot_->setObservationCovarianceMatrix(observation_distribution_->covar);
+    robot_->setObservationDistribution(observation_distribution);
 }
 
 std::shared_ptr<shared::EigenMultivariateNormal<double>> RobotEnvironment::getProcessDistribution()
@@ -374,14 +376,8 @@ std::vector<std::vector<double>> RobotEnvironment::getGoalStates() const
     return goal_states_;
 }
 
-void RobotEnvironment::makeObservation(std::vector<double>& state, std::vector<double>& observation) const
-{
-    observation.clear();
-    Eigen::MatrixXd sample(state.size(), 1);
-    observation_distribution_->nextSample(sample);
-    for (size_t i = 0; i < state.size(); i++) {
-        observation.push_back(state[i] + sample(i));
-    }
+void RobotEnvironment::setObservationType(std::string observationType) {
+    robot_->setObservationType(observationType);
 }
 
 void RobotEnvironment::generateRandomScene(unsigned int& numObstacles)

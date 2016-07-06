@@ -100,5 +100,4 @@ install(FILES ${INCLUDE_DIR}/Obstacle.hpp  DESTINATION include/robot_environment
 install(FILES ${INCLUDE_DIR}/BoxObstacle.hpp  DESTINATION include/robot_environment)
 install(FILES ${INCLUDE_DIR}/SphereObstacle.hpp  DESTINATION include/robot_environment)
 install(FILES ${INCLUDE_DIR}/Terrain.hpp  DESTINATION include/robot_environment)
-install(FILES ${INCLUDE_DIR}/mult_normal.hpp  DESTINATION include/robot_environment)
 install(FILES "${pkg_conf_file_out}" DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/ COMPONENT pkgconfig)
