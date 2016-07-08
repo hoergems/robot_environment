@@ -66,16 +66,16 @@ public:
 
     bool createDubinRobot(std::string robot_file);
 
-    std::shared_ptr<shared::EigenMultivariateNormal<double>> createDistribution(Eigen::MatrixXd& mean,
-            Eigen::MatrixXd& covariance_matrix);
+    std::shared_ptr<Eigen::EigenMultivariateNormal<double>> createDistribution(Eigen::MatrixXd& mean,
+            Eigen::MatrixXd& covariance_matrix, unsigned long seed);
 
-    void setProcessDistribution(std::shared_ptr<shared::EigenMultivariateNormal<double>>& process_distribution);
+    void setProcessDistribution(std::shared_ptr<Eigen::EigenMultivariateNormal<double>>& process_distribution);
 
-    void setObservationDistribution(std::shared_ptr<shared::EigenMultivariateNormal<double>>& observation_distribution);
+    void setObservationDistribution(std::shared_ptr<Eigen::EigenMultivariateNormal<double>>& observation_distribution);
 
-    std::shared_ptr<shared::EigenMultivariateNormal<double>> getProcessDistribution();
+    std::shared_ptr<Eigen::EigenMultivariateNormal<double>> getProcessDistribution();
 
-    std::shared_ptr<shared::EigenMultivariateNormal<double>> getObservationDistribution();
+    std::shared_ptr<Eigen::EigenMultivariateNormal<double>> getObservationDistribution();
 
     std::shared_ptr<boost::mt19937> getRandomGenerator();
 
@@ -149,9 +149,9 @@ private:
 
     std::shared_ptr<boost::mt19937> generator_;
 
-    std::shared_ptr<shared::EigenMultivariateNormal<double>> process_distribution_;
+    std::shared_ptr<Eigen::EigenMultivariateNormal<double>> process_distribution_;
 
-    std::shared_ptr<shared::EigenMultivariateNormal<double>> observation_distribution_;
+    std::shared_ptr<Eigen::EigenMultivariateNormal<double>> observation_distribution_;
 
 };
 
