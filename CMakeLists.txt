@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 2.6)
 
-project (robot_environmentmanip)
+project (robot_environment6dof)
 
 if (NOT CMAKE_BUILD_TYPE)
    set(CMAKE_BUILD_TYPE Release)
@@ -67,7 +67,7 @@ endif()
 
 ############################# LOAD ROBOTS #############################
 if(PKG_CONFIG_FOUND)    
-    pkg_check_modules(ROBOTS robotsmanip)
+    pkg_check_modules(ROBOTS robots6dof)
     if(NOT ROBOTS_FOUND)
        message(FATAL_ERROR "ROBOTS could not be found")
     endif()
@@ -75,29 +75,29 @@ if(PKG_CONFIG_FOUND)
     link_directories(${ROBOTS_LIBRARY_DIRS})     
 endif()
 
-add_library(robot_environmentmanip SHARED 
+add_library(robot_environment6dof SHARED 
             ${CMAKE_CURRENT_SOURCE_DIR}/src/robot_environment.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/src/Obstacle.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/src/Terrain.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/src/BoxObstacle.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/src/SphereObstacle.cpp)
             
-target_link_libraries (robot_environmentmanip
+target_link_libraries (robot_environment6dof
                        ${Boost_LIBRARIES}
                        ${PYTHON_LIBRARIES}                       
                        ${FCL_LIBRARIES}
                        ${TINYXML_LIBRARIES}
                        ${ROBOTS_LIBRARIES})
                        
-set(pkg_conf_file_in "${CMAKE_CURRENT_SOURCE_DIR}/robot_environmentmanip.pc.in")
-set(pkg_conf_file_out "${CMAKE_CURRENT_BINARY_DIR}/robot_environmentmanip.pc")
+set(pkg_conf_file_in "${CMAKE_CURRENT_SOURCE_DIR}/robot_environment6dof.pc.in")
+set(pkg_conf_file_out "${CMAKE_CURRENT_BINARY_DIR}/robot_environment6dof.pc")
 configure_file("${pkg_conf_file_in}" "${pkg_conf_file_out}" @ONLY)
 
-install(TARGETS robot_environmentmanip DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(TARGETS robot_environment6dof DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-install(FILES ${INCLUDE_DIR}/robot_environment.hpp  DESTINATION include/robot_environmentmanip)
-install(FILES ${INCLUDE_DIR}/Obstacle.hpp  DESTINATION include/robot_environmentmanip)
-install(FILES ${INCLUDE_DIR}/BoxObstacle.hpp  DESTINATION include/robot_environmentmanip)
-install(FILES ${INCLUDE_DIR}/SphereObstacle.hpp  DESTINATION include/robot_environmentmanip)
-install(FILES ${INCLUDE_DIR}/Terrain.hpp  DESTINATION include/robot_environmentmanip)
+install(FILES ${INCLUDE_DIR}/robot_environment.hpp  DESTINATION include/robot_environment6dof)
+install(FILES ${INCLUDE_DIR}/Obstacle.hpp  DESTINATION include/robot_environment6dof)
+install(FILES ${INCLUDE_DIR}/BoxObstacle.hpp  DESTINATION include/robot_environment6dof)
+install(FILES ${INCLUDE_DIR}/SphereObstacle.hpp  DESTINATION include/robot_environment6dof)
+install(FILES ${INCLUDE_DIR}/Terrain.hpp  DESTINATION include/robot_environment6dof)
 install(FILES "${pkg_conf_file_out}" DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/ COMPONENT pkgconfig)
