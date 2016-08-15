@@ -16,30 +16,32 @@
 #include "fcl/shape/geometric_shapes.h"
 #include "fcl/shape/geometric_shapes_utility.h"
 
-namespace shared {
+namespace shared
+{
 
-class BoxObstacle: public Obstacle  {
-    public:    
-        BoxObstacle(std::string name, 
-        		    double pos_x, 
-        		    double pos_y, 
-        		    double pos_z, 
-        		    double size_x, 
-        		    double size_y, 
-        		    double size_z, 
-        		    const Terrain &terrain);
-                
-        virtual void createCollisionObject() override;
- 
-	virtual void getDimensions(std::vector<double> &dimensions) override;
-           
-        double pos_x_;
-        double pos_y_;
-        double pos_z_;
-        double size_x_;
-        double size_y_;
-        double size_z_;
-        
+class BoxObstacle: public Obstacle
+{
+public:
+    BoxObstacle(std::string name,
+                double pos_x,
+                double pos_y,
+                double pos_z,
+                double size_x,
+                double size_y,
+                double size_z,
+                const Terrain& terrain);
+
+    virtual void createCollisionObject() override;
+
+    virtual void getDimensions(std::vector<double>& dimensions) override;
+
+    double pos_x_;
+    double pos_y_;
+    double pos_z_;
+    double size_x_;
+    double size_y_;
+    double size_z_;
+
 };
 
 }

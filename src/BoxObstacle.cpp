@@ -40,8 +40,8 @@ void BoxObstacle::getDimensions(std::vector<double>& dimensions)
     dimensions[1] = pos_y_;
     dimensions[2] = pos_z_;
     dimensions[3] = size_x_;
-    dimensions[3] = size_y_;
-    dimensions[3] = size_z_;
+    dimensions[4] = size_y_;
+    dimensions[5] = size_z_;
 }
 
 

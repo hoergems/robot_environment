@@ -133,7 +133,7 @@ public:
     /**
      * Get the obstacle's dimensions
      */
-    virtual void getDimensions(std::vector<double>& dimensions);
+    virtual void getDimensions(std::vector<double>& dimensions) = 0;
 
 protected:
     std::string name_;
