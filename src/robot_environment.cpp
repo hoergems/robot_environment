@@ -55,9 +55,9 @@ RobotEnvironment::RobotEnvironment():
     generator_ = std::make_shared<boost::mt19937>(rd());
 }
 
-std::shared_ptr<Eigen::EigenMultivariateNormal<double>> RobotEnvironment::createDistribution(Eigen::MatrixXd& mean, 
-											     Eigen::MatrixXd& covariance_matrix,
-											     unsigned long seed)
+std::shared_ptr<Eigen::EigenMultivariateNormal<double>> RobotEnvironment::createDistribution(Eigen::MatrixXd& mean,
+        Eigen::MatrixXd& covariance_matrix,
+        unsigned long seed)
 {
     std::shared_ptr<Eigen::EigenMultivariateNormal<double>> distribution =
         std::make_shared<Eigen::EigenMultivariateNormal<double>>(mean, covariance_matrix, false, seed);
@@ -95,11 +95,6 @@ std::shared_ptr<Eigen::EigenMultivariateNormal<double>> RobotEnvironment::getObs
 std::shared_ptr<boost::mt19937> RobotEnvironment::getRandomGenerator()
 {
     return generator_;
-}
-
-void RobotEnvironment::addObstacle(std::shared_ptr<Obstacle>& obstacle)
-{
-    obstacles_.push_back(obstacle);
 }
 
 void RobotEnvironment::setObstacles(std::vector<std::shared_ptr<Obstacle>>& obstacles)
@@ -361,7 +356,7 @@ bool RobotEnvironment::loadObstaclesXML(std::string& obstacles_file)
         } else {
             assert(false && "Utils: ERROR: Obstacle has an unknown type!");
         }
-        
+
         obstacles_[obstacles_.size() - 1]->setStandardColor(obstacles[i].d_color, obstacles[i].a_color);
     }
 
@@ -378,7 +373,8 @@ std::vector<std::vector<double>> RobotEnvironment::getGoalStates() const
     return goal_states_;
 }
 
-void RobotEnvironment::setObservationType(std::string observationType) {
+void RobotEnvironment::setObservationType(std::string observationType)
+{
     robot_->setObservationType(observationType);
 }
 
@@ -386,17 +382,17 @@ void RobotEnvironment::generateRandomScene(unsigned int& numObstacles)
 {
     obstacles_.clear();
     std::uniform_real_distribution<double> uniform_dist(-1.0, 4.0);
-    std::uniform_real_distribution<double> uniform_distZ(3.0, 6.0);    
+    std::uniform_real_distribution<double> uniform_distZ(3.0, 6.0);
     for (size_t i = 0; i < numObstacles; i++) {
-	double rand_x = uniform_dist(*generator_);
-	double rand_y = uniform_dist(*generator_);
-	double rand_z = uniform_distZ(*generator_);
-	
+        double rand_x = uniform_dist(*generator_);
+        double rand_y = uniform_dist(*generator_);
+        double rand_z = uniform_distZ(*generator_);
+
         shared::Terrain terrain("t" + std::to_string(i),
                                 0.0,
                                 0.0,
                                 false);
-	std::string box_name = "b" + std::to_string(i);
+        std::string box_name = "b" + std::to_string(i);
         obstacles_.push_back(std::make_shared<shared::BoxObstacle>(box_name,
                              rand_x,
                              rand_y,
@@ -405,10 +401,10 @@ void RobotEnvironment::generateRandomScene(unsigned int& numObstacles)
                              0.25,
                              0.25,
                              terrain));
-	std::vector<double> diffuseColor({0.5, 0.5, 0.5, 0.5});
-	obstacles_[obstacles_.size() - 1]->setStandardColor(diffuseColor, diffuseColor);
-	std::vector<double> dims({rand_x, rand_y, rand_z, 0.25, 0.25, 0.25});
-	robot_->addBox(box_name, dims);
+        std::vector<double> diffuseColor( {0.5, 0.5, 0.5, 0.5});
+        obstacles_[obstacles_.size() - 1]->setStandardColor(diffuseColor, diffuseColor);
+        std::vector<double> dims( {rand_x, rand_y, rand_z, 0.25, 0.25, 0.25});
+        robot_->addBox(box_name, dims);
 
     }
     cout << "random scene created " << obstacles_.size();
@@ -496,6 +492,79 @@ bool RobotEnvironment::loadGoalArea(std::string& env_file)
         }
     }
 
+    return true;
+}
+
+std::shared_ptr<shared::Obstacle> RobotEnvironment::makeObstacle(std::string obstacleName,
+        std::string obstacleType,
+        std::vector<double>& dims) const
+{
+    shared::Terrain terrain("terr",
+                            0.0,
+                            0.0,
+                            false);
+
+    std::shared_ptr<shared::Obstacle> obstacle;
+    if (obstacleType == "box") {
+        obstacle = std::make_shared<shared::BoxObstacle>(obstacleName,
+                   dims[0],
+                   dims[1],
+                   dims[2],
+                   dims[3],
+                   dims[4],
+                   dims[5],
+                   terrain);
+    }
+
+    else if (obstacleType == "sphere") {
+        obstacle = std::make_shared<shared::SphereObstacle>(obstacleName,
+                   dims[0],
+                   dims[1],
+                   dims[2],
+                   dims[3],
+                   terrain);
+
+    } else {
+        cout << "RobotEnvironment: Error: Can't create obstacle with type " << obstacleType << ". Type not recognized." << endl;
+        return nullptr;
+    }
+
+    return obstacle;
+}
+
+bool RobotEnvironment::addObstacle(std::shared_ptr<shared::Obstacle>& obstacle)
+{
+    for (auto & k : obstacles_) {
+        if (k->getName() == obstacle->getName()) {
+            cout << "Error: Can't add obstacle " << obstacle->getName() << ". An obstacle with the same name already exists.";
+            return false;
+        }
+    }
+
+    obstacles_.push_back(obstacle);
+    std::vector<double> dimensions;
+    obstacle->getDimensions(dimensions);    
+    robot_->addBox(obstacle->getName(), dimensions);
+}
+
+bool RobotEnvironment::removeObstacles(std::vector<std::string>& obstacle_names)
+{
+    for (auto & k : obstacle_names) {
+        removeObstacle(k);
+	robot_->removeBox(k);
+    }
+    
+    return true;
+}
+
+bool RobotEnvironment::removeObstacle(std::string obstacleName)
+{
+    for (size_t i = 0; i < obstacles_.size(); i++) {
+        if (obstacles_[i]->getName() == obstacleName) {
+            obstacles_.erase(obstacles_.begin() + i);
+            return true;
+        }
+    }
     return true;
 }
 

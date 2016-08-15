@@ -28,6 +28,8 @@ class SphereObstacle: public Obstacle  {
         		       const Terrain &terrain);
                 
         virtual void createCollisionObject() override;
+	
+	virtual void getDimensions(std::vector<double> &dimensions) override;
 
     private:
         double pos_x_;

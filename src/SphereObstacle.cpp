@@ -22,6 +22,15 @@ SphereObstacle::SphereObstacle(std::string name,
 	createCollisionObject();
 }
 
+void SphereObstacle::getDimensions(std::vector<double> &dimensions) {
+    dimensions.clear();
+    dimensions.resize(4);
+    dimensions[0] = pos_x_;
+    dimensions[1] = pos_y_;
+    dimensions[2] = pos_z_;
+    dimensions[3] = radius_;    
+}
+
 void SphereObstacle::createCollisionObject() {	
 	Sphere* sphere = new Sphere(radius_);
 	Vec3f trans(pos_x_, pos_y_, pos_z_);

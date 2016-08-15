@@ -30,7 +30,8 @@ class BoxObstacle: public Obstacle  {
         		    const Terrain &terrain);
                 
         virtual void createCollisionObject() override;
-
+ 
+	virtual void getDimensions(std::vector<double> &dimensions) override;
            
         double pos_x_;
         double pos_y_;

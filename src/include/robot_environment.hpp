@@ -27,8 +27,6 @@ class RobotEnvironment
 public:
     RobotEnvironment();
 
-    void addObstacle(std::shared_ptr<Obstacle>& obstacle);
-
     void setObstacles(std::vector<std::shared_ptr<Obstacle>>& obstacles);
 
     void setRobot(std::shared_ptr<shared::Robot>& robot);
@@ -46,7 +44,7 @@ public:
     void getGoalArea(std::vector<double>& goal_area);
 
     void setGoalArea(std::vector<double>& goal_area);
-    
+
     void setObservationType(std::string observationType);
 
     /**
@@ -82,9 +80,9 @@ public:
     void setControlDuration(double control_duration);
 
     void setSimulationStepSize(double simulation_step_size);
-    
+
     void setGravityConstant(double gravity_constant);
-    
+
     void setNewtonModel();
 
     double getControlDuration() const;
@@ -92,17 +90,17 @@ public:
     double getSimulationStepSize() const;
 
     template <class RobotType> std::shared_ptr<shared::RobotEnvironment> clone() {
-	std::shared_ptr<shared::RobotEnvironment> env = std::make_shared<shared::RobotEnvironment>();
+        std::shared_ptr<shared::RobotEnvironment> env = std::make_shared<shared::RobotEnvironment>();
         //RobotEnvironment* env(new RobotEnvironment());
         env->createRobot<RobotType>(robot_path_);
-	env->getRobot()->setObservationType(robot_->getObservationSpace()->getObservationType());	
+        env->getRobot()->setObservationType(robot_->getObservationSpace()->getObservationType());
         env->setControlDuration(control_duration_);
         env->setSimulationStepSize(simulation_step_size_);
         env->setProcessDistribution(process_distribution_);
         env->setObservationDistribution(observation_distribution_);
         env->setGoalStates(goal_states_);
         env->setObstacles(obstacles_);
-	env->setGoalArea(goal_area_);
+        env->setGoalArea(goal_area_);
         if (dynamic_model_ == "newton") {
             env->getRobot()->setNewtonModel();
         }
@@ -116,20 +114,31 @@ public:
     void setGoalStates(std::vector<std::vector<double>>& goal_states);
 
     std::vector<std::vector<double>> getGoalStates() const;
-    
+
     void generateRandomScene(unsigned int& numObstacles);
+
+    /**** Methods to handle changes in the environment ****/
+    std::shared_ptr<shared::Obstacle> makeObstacle(std::string obstacleName,
+            std::string obstacleType,
+            std::vector<double>& dims) const;
+
+    bool addObstacle(std::shared_ptr<shared::Obstacle>& obstacle);
+
+    bool removeObstacle(std::string obstacleName);
+
+    bool removeObstacles(std::vector<std::string>& obstacle_names);
 
 private:
     std::string robot_path_;
 
     std::string environment_path_;
-    
+
     std::string dynamic_model_;
 
     double simulation_step_size_;
 
     double control_duration_;
-    
+
     double gravity_constant_;
 
     std::vector<std::shared_ptr<Obstacle>> obstacles_;
