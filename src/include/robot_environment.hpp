@@ -123,6 +123,8 @@ public:
             std::vector<double>& dims) const;
 
     bool addObstacle(std::shared_ptr<shared::Obstacle>& obstacle);
+    
+    std::shared_ptr<shared::Obstacle> getObstacle(std::string name);
 
     bool removeObstacle(std::string obstacleName);
 

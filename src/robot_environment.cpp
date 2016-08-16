@@ -198,7 +198,6 @@ bool RobotEnvironment::loadEnvironment(std::string environment_file)
     }
 
     cout << "RobotEnvironment: Environment loaded successfully" << endl;
-
     if (!loadGoalArea(environment_file)) {
         cout << "RobotEnvironment: Couldn't load goal area" << endl;
         return false;
@@ -532,11 +531,22 @@ std::shared_ptr<shared::Obstacle> RobotEnvironment::makeObstacle(std::string obs
     return obstacle;
 }
 
+std::shared_ptr<shared::Obstacle> RobotEnvironment::getObstacle(std::string name) {
+    for (size_t i = 0; i < obstacles_.size(); i++) { 
+	if (obstacles_[i]->getName() == name) { 
+	    return obstacles_[i];
+	}
+    }
+    
+    cout << "RobotEnvironment: Warning: Obstacle '" << name << "' doesn't exist";
+    return nullptr;
+}
+
 bool RobotEnvironment::addObstacle(std::shared_ptr<shared::Obstacle>& obstacle)
 {
     for (size_t i = 0; i < obstacles_.size(); i++) {
 	if (obstacles_[i]->getName() == obstacle->getName()) {
-	    cout << "RobotEnvironment addObstacle: Obstacle '" << obstacle->getName() << "' already exist. Removing current instance." << endl;
+	    cout << "RobotEnvironment addObstacle: Obstacle '" << obstacle->getName() << "' already exist. Replacing current instance." << endl;
 	    removeObstacle(obstacle->getName());
 	}
     }
@@ -565,6 +575,8 @@ bool RobotEnvironment::removeObstacle(std::string obstacleName)
             return true;
         }
     }
+    
+    cout << "RobotEnvironment: Couldn't remove obstacle '" << obstacleName << "'. Obstacle doesn't exist" << endl;
     return true;
 }
 
