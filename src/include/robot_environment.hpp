@@ -120,7 +120,9 @@ public:
     /**** Methods to handle changes in the environment ****/
     std::shared_ptr<shared::Obstacle> makeObstacle(std::string obstacleName,
             std::string obstacleType,
-            std::vector<double>& dims) const;
+            std::vector<double>& dims,
+            bool traversable,
+            double traversalCost) const;
 
     bool addObstacle(std::shared_ptr<shared::Obstacle>& obstacle);
     

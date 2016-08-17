@@ -496,12 +496,14 @@ bool RobotEnvironment::loadGoalArea(std::string& env_file)
 
 std::shared_ptr<shared::Obstacle> RobotEnvironment::makeObstacle(std::string obstacleName,
         std::string obstacleType,
-        std::vector<double>& dims) const
+        std::vector<double>& dims,
+        bool traversable,
+        double traversalCost) const
 {
     shared::Terrain terrain("terr",
+                            traversalCost,
                             0.0,
-                            0.0,
-                            false);
+                            traversable);
 
     std::shared_ptr<shared::Obstacle> obstacle;
     if (obstacleType == "box") {
@@ -531,13 +533,14 @@ std::shared_ptr<shared::Obstacle> RobotEnvironment::makeObstacle(std::string obs
     return obstacle;
 }
 
-std::shared_ptr<shared::Obstacle> RobotEnvironment::getObstacle(std::string name) {
-    for (size_t i = 0; i < obstacles_.size(); i++) { 
-	if (obstacles_[i]->getName() == name) { 
-	    return obstacles_[i];
-	}
+std::shared_ptr<shared::Obstacle> RobotEnvironment::getObstacle(std::string name)
+{
+    for (size_t i = 0; i < obstacles_.size(); i++) {
+        if (obstacles_[i]->getName() == name) {
+            return obstacles_[i];
+        }
     }
-    
+
     cout << "RobotEnvironment: Warning: Obstacle '" << name << "' doesn't exist";
     return nullptr;
 }
@@ -545,24 +548,24 @@ std::shared_ptr<shared::Obstacle> RobotEnvironment::getObstacle(std::string name
 bool RobotEnvironment::addObstacle(std::shared_ptr<shared::Obstacle>& obstacle)
 {
     for (size_t i = 0; i < obstacles_.size(); i++) {
-	if (obstacles_[i]->getName() == obstacle->getName()) {
-	    cout << "RobotEnvironment addObstacle: Obstacle '" << obstacle->getName() << "' already exist. Replacing current instance." << endl;
-	    removeObstacle(obstacle->getName());
-	}
+        if (obstacles_[i]->getName() == obstacle->getName()) {
+            cout << "RobotEnvironment addObstacle: Obstacle '" << obstacle->getName() << "' already exist. Replacing current instance." << endl;
+            removeObstacle(obstacle->getName());
+        }
     }
 
     obstacles_.push_back(obstacle);
     std::vector<double> dimensions;
-    obstacle->getDimensions(dimensions);    
+    obstacle->getDimensions(dimensions);
     robot_->addBox(obstacle->getName(), dimensions);
 }
 
 bool RobotEnvironment::removeObstacles(std::vector<std::string>& obstacle_names)
 {
     for (auto & k : obstacle_names) {
-        removeObstacle(k);	
+        removeObstacle(k);
     }
-    
+
     return true;
 }
 
@@ -571,11 +574,11 @@ bool RobotEnvironment::removeObstacle(std::string obstacleName)
     for (size_t i = 0; i < obstacles_.size(); i++) {
         if (obstacles_[i]->getName() == obstacleName) {
             obstacles_.erase(obstacles_.begin() + i);
-	    robot_->removeBox(obstacleName);
+            robot_->removeBox(obstacleName);
             return true;
         }
     }
-    
+
     cout << "RobotEnvironment: Couldn't remove obstacle '" << obstacleName << "'. Obstacle doesn't exist" << endl;
     return true;
 }
