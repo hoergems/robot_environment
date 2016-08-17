@@ -45,7 +45,7 @@ public:
 
     void setGoalArea(std::vector<double>& goal_area);
 
-    void setObservationType(std::string observationType);
+    void makeObservationSpace(const shared::ObservationSpaceInfo &observationSpaceInfo);
 
     /**
      * Create the robots
@@ -93,7 +93,7 @@ public:
         std::shared_ptr<shared::RobotEnvironment> env = std::make_shared<shared::RobotEnvironment>();
         //RobotEnvironment* env(new RobotEnvironment());
         env->createRobot<RobotType>(robot_path_);
-        env->getRobot()->setObservationType(robot_->getObservationSpace()->getObservationType());
+        env->getRobot()->makeObservationSpace(robot_->getObservationSpace()->getObservationSpaceInfo());        
         env->setControlDuration(control_duration_);
         env->setSimulationStepSize(simulation_step_size_);
         env->setProcessDistribution(process_distribution_);

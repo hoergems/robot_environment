@@ -372,9 +372,9 @@ std::vector<std::vector<double>> RobotEnvironment::getGoalStates() const
     return goal_states_;
 }
 
-void RobotEnvironment::setObservationType(std::string observationType)
+void RobotEnvironment::makeObservationSpace(const shared::ObservationSpaceInfo &observationSpaceInfo)
 {
-    robot_->setObservationType(observationType);
+    robot_->makeObservationSpace(observationSpaceInfo);
 }
 
 void RobotEnvironment::generateRandomScene(unsigned int& numObstacles)
