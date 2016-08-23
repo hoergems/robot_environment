@@ -45,7 +45,7 @@ public:
 
     void setGoalArea(std::vector<double>& goal_area);
 
-    void makeObservationSpace(const shared::ObservationSpaceInfo &observationSpaceInfo);
+    void makeObservationSpace(const shared::ObservationSpaceInfo& observationSpaceInfo);
 
     /**
      * Create the robots
@@ -64,17 +64,6 @@ public:
 
     bool createDubinRobot(std::string robot_file);
 
-    std::shared_ptr<Eigen::EigenMultivariateNormal<double>> createDistribution(Eigen::MatrixXd& mean,
-            Eigen::MatrixXd& covariance_matrix, unsigned long seed);
-
-    void setProcessDistribution(std::shared_ptr<Eigen::EigenMultivariateNormal<double>>& process_distribution);
-
-    void setObservationDistribution(std::shared_ptr<Eigen::EigenMultivariateNormal<double>>& observation_distribution);
-
-    std::shared_ptr<Eigen::EigenMultivariateNormal<double>> getProcessDistribution();
-
-    std::shared_ptr<Eigen::EigenMultivariateNormal<double>> getObservationDistribution();
-
     std::shared_ptr<boost::mt19937> getRandomGenerator();
 
     void setControlDuration(double control_duration);
@@ -88,17 +77,33 @@ public:
     double getControlDuration() const;
 
     double getSimulationStepSize() const;
+    
+    std::shared_ptr<Eigen::Distribution<double>> createDistribution(Eigen::MatrixXd &mean, 
+								    Eigen::MatrixXd &covar,
+								    unsigned long &seed,
+								    std::string &type);
 
     template <class RobotType> std::shared_ptr<shared::RobotEnvironment> clone() {
         std::shared_ptr<shared::RobotEnvironment> env = std::make_shared<shared::RobotEnvironment>();
         //RobotEnvironment* env(new RobotEnvironment());
         env->createRobot<RobotType>(robot_path_);
         env->getRobot()->makeObservationSpace(robot_->getObservationSpace()->getObservationSpaceInfo());
-	env->getRobot()->makeActionSpace();
+        env->getRobot()->makeActionSpace();
         env->setControlDuration(control_duration_);
         env->setSimulationStepSize(simulation_step_size_);
-        env->setProcessDistribution(process_distribution_);
-        env->setObservationDistribution(observation_distribution_);
+	
+	Eigen::MatrixXd meanProcess = env->getRobot()->getProcessDistribution()->_mean;
+	Eigen::MatrixXd covarProcess = env->getRobot()->getProcessDistribution()->_covar;
+	uint64_t seedProc = env->getRobot()->getProcessDistribution()->_seed;
+	
+	Eigen::MatrixXd meanObs = env->getRobot()->getObservationDistribution()->_mean;
+	Eigen::MatrixXd covarObs = env->getRobot()->getObservationDistribution()->_covar;
+	uint64_t seedObs = env->getRobot()->getObservationDistribution()->_seed;
+	
+	env->getRobot()->makeProcessDistribution(meanProcess, covarProcess, seedProc);
+	env->getRobot()->makeObservationDistribution(meanObs, covarObs, seedObs);
+
+        
         env->setGoalStates(goal_states_);
         env->setObstacles(obstacles_);
         env->setGoalArea(goal_area_);
@@ -126,7 +131,7 @@ public:
             double traversalCost) const;
 
     bool addObstacle(std::shared_ptr<shared::Obstacle>& obstacle);
-    
+
     std::shared_ptr<shared::Obstacle> getObstacle(std::string name);
 
     bool removeObstacle(std::string obstacleName);
@@ -161,10 +166,6 @@ private:
     bool loadGoalArea(std::string& env_file);
 
     std::shared_ptr<boost::mt19937> generator_;
-
-    std::shared_ptr<Eigen::EigenMultivariateNormal<double>> process_distribution_;
-
-    std::shared_ptr<Eigen::EigenMultivariateNormal<double>> observation_distribution_;
 
 };
 

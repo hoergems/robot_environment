@@ -42,8 +42,6 @@ RobotEnvironment::RobotEnvironment():
     obstacles_(),
     goal_area_(),
     robot_(nullptr),
-    process_distribution_(nullptr),
-    observation_distribution_(nullptr),
     generator_(nullptr),
     robot_path_(""),
     environment_path_(""),
@@ -55,42 +53,31 @@ RobotEnvironment::RobotEnvironment():
     generator_ = std::make_shared<boost::mt19937>(rd());
 }
 
-std::shared_ptr<Eigen::EigenMultivariateNormal<double>> RobotEnvironment::createDistribution(Eigen::MatrixXd& mean,
+std::shared_ptr<Eigen::Distribution<double>> RobotEnvironment::createDistribution(Eigen::MatrixXd& mean,
+        Eigen::MatrixXd& covar,
+	unsigned long &seed,
+        std::string& type)
+{
+    std::shared_ptr<Eigen::Distribution<double>> distr;
+    if (type == "MultivariateNormal") {
+	distr = std::make_shared<Eigen::EigenMultivariateNormal<double>>(mean, covar, false, seed);
+    }
+    
+    return distr;
+}
+
+/**std::shared_ptr<Eigen::Distribution<double>> RobotEnvironment::createDistribution(Eigen::MatrixXd& mean,
         Eigen::MatrixXd& covariance_matrix,
         unsigned long seed)
 {
-    std::shared_ptr<Eigen::EigenMultivariateNormal<double>> distribution =
-        std::make_shared<Eigen::EigenMultivariateNormal<double>>(mean, covariance_matrix, false, seed);
+    std::shared_ptr<Eigen::Distribution<double>> distribution =
+        std::make_shared<Eigen::Distribution<double>>(mean, covariance_matrix, false, seed);
     //distribution->setMean(mean);
     //distribution->setCovar(covariance_matrix);
     return distribution;
-}
+}*/
 
-void RobotEnvironment::setProcessDistribution(std::shared_ptr<Eigen::EigenMultivariateNormal<double>>& process_distribution)
-{
-    process_distribution_ = process_distribution;
-    assert(robot_ && "Can't set process distribution since robot has not been setup");
-    robot_->setStateCovarianceMatrix(process_distribution_->_covar);
-    robot_->setProcessDistribution(process_distribution);
-}
 
-void RobotEnvironment::setObservationDistribution(std::shared_ptr<Eigen::EigenMultivariateNormal<double>>& observation_distribution)
-{
-    observation_distribution_ = observation_distribution;
-    assert(robot_ && "Can't set observation distribution since robot has not been setup");
-    robot_->setObservationCovarianceMatrix(observation_distribution_->_covar);
-    robot_->setObservationDistribution(observation_distribution);
-}
-
-std::shared_ptr<Eigen::EigenMultivariateNormal<double>> RobotEnvironment::getProcessDistribution()
-{
-    return process_distribution_;
-}
-
-std::shared_ptr<Eigen::EigenMultivariateNormal<double>> RobotEnvironment::getObservationDistribution()
-{
-    return observation_distribution_;
-}
 
 std::shared_ptr<boost::mt19937> RobotEnvironment::getRandomGenerator()
 {
@@ -372,7 +359,7 @@ std::vector<std::vector<double>> RobotEnvironment::getGoalStates() const
     return goal_states_;
 }
 
-void RobotEnvironment::makeObservationSpace(const shared::ObservationSpaceInfo &observationSpaceInfo)
+void RobotEnvironment::makeObservationSpace(const shared::ObservationSpaceInfo& observationSpaceInfo)
 {
     robot_->makeObservationSpace(observationSpaceInfo);
 }
