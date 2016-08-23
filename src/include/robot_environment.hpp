@@ -88,7 +88,9 @@ public:
         //RobotEnvironment* env(new RobotEnvironment());
         env->createRobot<RobotType>(robot_path_);
         env->getRobot()->makeObservationSpace(robot_->getObservationSpace()->getObservationSpaceInfo());
-        env->getRobot()->makeActionSpace();
+	
+	bool normalizedActionSpace = env->getRobot()->getActionSpace()->isNormalized();	
+        env->getRobot()->makeActionSpace(normalizedActionSpace);
         env->setControlDuration(control_duration_);
         env->setSimulationStepSize(simulation_step_size_);
 	
