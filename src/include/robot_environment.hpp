@@ -89,18 +89,20 @@ public:
         env->createRobot<RobotType>(robot_path_);
         env->getRobot()->makeObservationSpace(robot_->getObservationSpace()->getObservationSpaceInfo());
 	
-	bool normalizedActionSpace = env->getRobot()->getActionSpace()->isNormalized();	
+	bool normalizedActionSpace = robot_->getActionSpace()->isNormalized();	
         env->getRobot()->makeActionSpace(normalizedActionSpace);
         env->setControlDuration(control_duration_);
         env->setSimulationStepSize(simulation_step_size_);
 	
-	Eigen::MatrixXd meanProcess = env->getRobot()->getProcessDistribution()->_mean;
-	Eigen::MatrixXd covarProcess = env->getRobot()->getProcessDistribution()->_covar;
-	uint64_t seedProc = env->getRobot()->getProcessDistribution()->_seed;
+	std::shared_ptr<Eigen::Distribution<double>> processDistribution = robot_->getProcessDistribution();
+	std::shared_ptr<Eigen::Distribution<double>> observationDistribution = robot_->getObservationDistribution();
+	Eigen::MatrixXd meanProcess = processDistribution->_mean;
+	Eigen::MatrixXd covarProcess = processDistribution->_covar;
+	uint64_t seedProc = processDistribution->_seed;
 	
-	Eigen::MatrixXd meanObs = env->getRobot()->getObservationDistribution()->_mean;
-	Eigen::MatrixXd covarObs = env->getRobot()->getObservationDistribution()->_covar;
-	uint64_t seedObs = env->getRobot()->getObservationDistribution()->_seed;
+	Eigen::MatrixXd meanObs = observationDistribution->_mean;
+	Eigen::MatrixXd covarObs = observationDistribution->_covar;
+	uint64_t seedObs = observationDistribution->_seed;
 	
 	env->getRobot()->makeProcessDistribution(meanProcess, covarProcess, seedProc);
 	env->getRobot()->makeObservationDistribution(meanObs, covarObs, seedObs);
