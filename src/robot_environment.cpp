@@ -163,6 +163,17 @@ void RobotEnvironment::getObstacles(std::vector<std::shared_ptr<shared::Obstacle
 
 }
 
+void RobotEnvironment::getObservableObstacles(std::vector<std::shared_ptr<shared::Obstacle> >& obstacles) const {
+    std::vector<std::shared_ptr<shared::Obstacle>> observableObstacles;
+    for (size_t i = 0; i < obstacles_.size(); i++) {
+	if (obstacles_[i]->getTerrain()->isObservable()) {
+	    observableObstacles.push_back(obstacles_[i]);
+	}
+    }
+    
+    obstacles = observableObstacles;
+}
+
 std::vector<std::shared_ptr<shared::ObstacleWrapper>> RobotEnvironment::getObstaclesPy()
 {
     std::vector<std::shared_ptr<shared::ObstacleWrapper>> obstacles;
@@ -310,11 +321,11 @@ bool RobotEnvironment::loadObstaclesXML(std::string& obstacles_file)
                         }
                     }
 
-                    bool observable = false;
+                    bool observable = true;
                     TiXmlElement* observable_xml = terrain_xml->FirstChildElement("Observable");
 		    if (observable_xml) {
-			if (boost::lexical_cast<std::string>(observable_xml->GetText()) == "true") {
-			    observable = true;
+			if (boost::lexical_cast<std::string>(observable_xml->GetText()) == "false") {
+			    observable = false;
 			}
 		    }
 

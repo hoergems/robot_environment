@@ -38,6 +38,11 @@ public:
     std::vector<std::vector<double>> loadGoalStatesFromFile(std::string filename);
 
     void getObstacles(std::vector<std::shared_ptr<shared::Obstacle> >& obstacles);
+    
+    /**
+     * Get all observable obstacles
+     */
+    void getObservableObstacles(std::vector<std::shared_ptr<shared::Obstacle> >& obstacles) const;
 
     std::vector<std::shared_ptr<shared::ObstacleWrapper>> getObstaclesPy();
 
