@@ -88,9 +88,9 @@ public:
             unsigned long& seed,
             std::string& type);
 
-    template <class RobotType> std::shared_ptr<shared::RobotEnvironment> clone() {
-        std::shared_ptr<shared::RobotEnvironment> env = std::make_shared<shared::RobotEnvironment>();
-        //RobotEnvironment* env(new RobotEnvironment());
+    template <class RobotType> 
+    std::shared_ptr<shared::RobotEnvironment> clone() {
+        std::shared_ptr<shared::RobotEnvironment> env = std::make_shared<shared::RobotEnvironment>();        
         env->createRobot<RobotType>(robot_path_);
         env->getRobot()->makeObservationSpace(robot_->getObservationSpace()->getObservationSpaceInfo());
 
@@ -111,14 +111,13 @@ public:
 
         env->getRobot()->makeProcessDistribution(meanProcess, covarProcess, seedProc);
         env->getRobot()->makeObservationDistribution(meanObs, covarObs, seedObs);
-
-
         env->setGoalStates(goal_states_);
         env->setObstacles(obstacles_);
         env->setGoalArea(goal_area_);
         if (dynamic_model_ == "newton") {
             env->getRobot()->setNewtonModel();
         }
+        
         env->setGravityConstant(gravity_constant_);
         std::vector<double> goal_position( {goal_area_[0], goal_area_[1], goal_area_[2]});
         double goal_radius = goal_area_[3];

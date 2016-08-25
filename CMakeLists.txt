@@ -95,9 +95,9 @@ configure_file("${pkg_conf_file_in}" "${pkg_conf_file_out}" @ONLY)
 
 install(TARGETS robot_environment DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-install(FILES ${INCLUDE_DIR}/robot_environment.hpp  DESTINATION include/robot_environment)
-install(FILES ${INCLUDE_DIR}/Obstacle.hpp  DESTINATION include/robot_environment)
-install(FILES ${INCLUDE_DIR}/BoxObstacle.hpp  DESTINATION include/robot_environment)
-install(FILES ${INCLUDE_DIR}/SphereObstacle.hpp  DESTINATION include/robot_environment)
-install(FILES ${INCLUDE_DIR}/Terrain.hpp  DESTINATION include/robot_environment)
+install(DIRECTORY ${INCLUDE_DIR}/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/robot_environment
+  FILES_MATCHING PATTERN "*.h" PATTERN "*.hxx" PATTERN "*.hpp"
+  PATTERN ".DS_Store" EXCLUDE
+)
 install(FILES "${pkg_conf_file_out}" DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/ COMPONENT pkgconfig)
+
