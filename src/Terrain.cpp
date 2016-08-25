@@ -5,11 +5,13 @@ namespace shared {
 Terrain::Terrain(const std::string name, 
                  const double traversalCost, 
                  const double velocityDamping,
-                 const bool traversable) :
+                 const bool traversable,
+		 bool observable) :
     name_(name),
     traversalCost_(traversalCost),
     velocityDamping_(velocityDamping),
-    traversable_(traversable)
+    traversable_(traversable),
+    observable_(observable)
 {
 
 }
@@ -28,6 +30,10 @@ const double Terrain::getVelocityDamping() const {
 
 const bool Terrain::isTraversable() const {
     return traversable_;
+}
+
+bool Terrain::isObservable() const {
+    return observable_;
 }
 
 }

@@ -20,6 +20,7 @@ struct TerrainStruct {
     double velocityDamping;
     double traversalCost;
     bool traversable;
+    bool observable;
 };
 
 struct ObstacleStruct {
@@ -55,14 +56,14 @@ RobotEnvironment::RobotEnvironment():
 
 std::shared_ptr<Eigen::Distribution<double>> RobotEnvironment::createDistribution(Eigen::MatrixXd& mean,
         Eigen::MatrixXd& covar,
-	unsigned long &seed,
+        unsigned long& seed,
         std::string& type)
 {
     std::shared_ptr<Eigen::Distribution<double>> distr;
     if (type == "MultivariateNormal") {
-	distr = std::make_shared<Eigen::EigenMultivariateNormal<double>>(mean, covar, false, seed);
+        distr = std::make_shared<Eigen::EigenMultivariateNormal<double>>(mean, covar, false, seed);
     }
-    
+
     return distr;
 }
 
@@ -303,13 +304,25 @@ bool RobotEnvironment::loadObstaclesXML(std::string& obstacles_file)
                     double cost = boost::lexical_cast<double>(cost_xml->GetText());
                     TiXmlElement* traversable_xml = terrain_xml->FirstChildElement("Traversable");
                     bool traversable = false;
-                    if (boost::lexical_cast<std::string>(traversable_xml->GetText()) == "true") {
-                        traversable = true;
+                    if (traversable_xml) {
+                        if (boost::lexical_cast<std::string>(traversable_xml->GetText()) == "true") {
+                            traversable = true;
+                        }
                     }
+
+                    bool observable = false;
+                    TiXmlElement* observable_xml = terrain_xml->FirstChildElement("Observable");
+		    if (observable_xml) {
+			if (boost::lexical_cast<std::string>(observable_xml->GetText()) == "true") {
+			    observable = true;
+			}
+		    }
+
                     terrain.name = terrain_name;
                     terrain.velocityDamping = damping;
                     terrain.traversalCost = cost;
                     terrain.traversable = traversable;
+                    terrain.observable = observable;
                     obstacles[obstacles.size() - 1].terrain = terrain;
                 }
             }
@@ -320,7 +333,8 @@ bool RobotEnvironment::loadObstaclesXML(std::string& obstacles_file)
         shared::Terrain terrain(obstacles[i].terrain.name,
                                 obstacles[i].terrain.traversalCost,
                                 obstacles[i].terrain.velocityDamping,
-                                obstacles[i].terrain.traversable);
+                                obstacles[i].terrain.traversable,
+                                obstacles[i].terrain.observable);
         if (obstacles[i].type == "box") {
             obstacles_.push_back(std::make_shared<shared::BoxObstacle>(obstacles[i].name,
                                  obstacles[i].x,
@@ -377,7 +391,8 @@ void RobotEnvironment::generateRandomScene(unsigned int& numObstacles)
         shared::Terrain terrain("t" + std::to_string(i),
                                 0.0,
                                 0.0,
-                                false);
+                                false,
+                                true);
         std::string box_name = "b" + std::to_string(i);
         obstacles_.push_back(std::make_shared<shared::BoxObstacle>(box_name,
                              rand_x,
@@ -485,12 +500,14 @@ std::shared_ptr<shared::Obstacle> RobotEnvironment::makeObstacle(std::string obs
         std::string obstacleType,
         std::vector<double>& dims,
         bool traversable,
-        double traversalCost) const
+        double traversalCost,
+        bool observable) const
 {
     shared::Terrain terrain("terr",
                             traversalCost,
                             0.0,
-                            traversable);
+                            traversable,
+                            observable);
 
     std::shared_ptr<shared::Obstacle> obstacle;
     if (obstacleType == "box") {

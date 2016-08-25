@@ -221,11 +221,12 @@ BOOST_PYTHON_MODULE(libobstacle)
         register_ptr_to_python<std::shared_ptr<shared::ObstacleWrapper>>();
     }
 
-    class_<Terrain>("Terrain", init<const std::string, const double, const double, const bool>())
+    class_<Terrain>("Terrain", init<const std::string, const double, const double, const bool, bool>())
     .def("getTraversalCost", &Terrain::getTraversalCost)
     .def("getName", &Terrain::getName)
     .def("getVelocityDamping", &Terrain::getVelocityDamping)
     .def("isTraversable", &Terrain::isTraversable)
+    .def("isObservable", &Terrain::isObservable)
     ;
 
     class_<ObstacleWrapper, boost::noncopyable>("Obstacle", init<std::string, Terrain>())
