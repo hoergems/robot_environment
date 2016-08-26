@@ -29,7 +29,7 @@ public:
                 double size_x,
                 double size_y,
                 double size_z,
-                const Terrain& terrain);
+                frapu::TerrainSharedPtr &terrain);
 
     virtual void createCollisionObject() override;
 

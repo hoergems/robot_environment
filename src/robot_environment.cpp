@@ -48,7 +48,8 @@ RobotEnvironment::RobotEnvironment():
     environment_path_(""),
     goal_states_(),
     gravity_constant_(0.0),
-    dynamic_model_("lagrange")
+    dynamic_model_("lagrange"),
+    environmentInfo_(nullptr)
 {
     boost::random_device rd;
     generator_ = std::make_shared<boost::mt19937>(rd());
@@ -85,9 +86,10 @@ std::shared_ptr<boost::mt19937> RobotEnvironment::getRandomGenerator()
     return generator_;
 }
 
-void RobotEnvironment::setObstacles(std::vector<std::shared_ptr<Obstacle>>& obstacles)
+void RobotEnvironment::setObstacles(std::vector<frapu::ObstacleSharedPtr>& obstacles)
 {
     obstacles_ = obstacles;
+    environmentInfo_->obstacles = obstacles;
 }
 
 void RobotEnvironment::setRobot(std::shared_ptr<shared::Robot>& robot)
@@ -154,7 +156,7 @@ double RobotEnvironment::getSimulationStepSize() const
     return simulation_step_size_;
 }
 
-void RobotEnvironment::getObstacles(std::vector<std::shared_ptr<shared::Obstacle> >& obstacles)
+void RobotEnvironment::getObstacles(std::vector<frapu::ObstacleSharedPtr>& obstacles)
 {
     obstacles.resize(obstacles_.size());
     for (size_t i = 0; i < obstacles_.size(); i++) {
@@ -163,30 +165,16 @@ void RobotEnvironment::getObstacles(std::vector<std::shared_ptr<shared::Obstacle
 
 }
 
-void RobotEnvironment::getObservableObstacles(std::vector<std::shared_ptr<shared::Obstacle> >& obstacles) const {
-    std::vector<std::shared_ptr<shared::Obstacle>> observableObstacles;
+void RobotEnvironment::getObservableObstacles(std::vector<frapu::ObstacleSharedPtr>& obstacles) const
+{
+    std::vector<frapu::ObstacleSharedPtr> observableObstacles;
     for (size_t i = 0; i < obstacles_.size(); i++) {
-	if (obstacles_[i]->getTerrain()->isObservable()) {
-	    observableObstacles.push_back(obstacles_[i]);
-	}
+        if (obstacles_[i]->getTerrain()->isObservable()) {
+            observableObstacles.push_back(obstacles_[i]);
+        }
     }
-    
+
     obstacles = observableObstacles;
-}
-
-std::vector<std::shared_ptr<shared::ObstacleWrapper>> RobotEnvironment::getObstaclesPy()
-{
-    std::vector<std::shared_ptr<shared::ObstacleWrapper>> obstacles;
-    for (size_t i = 0; i < obstacles_.size(); i++) {
-        obstacles.push_back(std::static_pointer_cast<shared::ObstacleWrapper>(obstacles_[i]));
-    }
-
-    return obstacles;
-}
-
-bool RobotEnvironment::file_exists(std::string& filename)
-{
-    return boost::filesystem::exists(filename);
 }
 
 bool RobotEnvironment::loadEnvironment(std::string environment_file)
@@ -209,7 +197,7 @@ bool RobotEnvironment::loadEnvironment(std::string environment_file)
 
 bool RobotEnvironment::loadObstaclesXML(std::string& obstacles_file)
 {
-    if (!file_exists(obstacles_file)) {
+    if (!frapu::fileExists(obstacles_file)) {
         cout << "RobotEnvironment: ERROR: Environment file '" << obstacles_file << "' doesn't exist" << endl;
         return false;
     }
@@ -323,11 +311,11 @@ bool RobotEnvironment::loadObstaclesXML(std::string& obstacles_file)
 
                     bool observable = true;
                     TiXmlElement* observable_xml = terrain_xml->FirstChildElement("Observable");
-		    if (observable_xml) {
-			if (boost::lexical_cast<std::string>(observable_xml->GetText()) == "false") {
-			    observable = false;
-			}
-		    }
+                    if (observable_xml) {
+                        if (boost::lexical_cast<std::string>(observable_xml->GetText()) == "false") {
+                            observable = false;
+                        }
+                    }
 
                     terrain.name = terrain_name;
                     terrain.velocityDamping = damping;
@@ -341,11 +329,16 @@ bool RobotEnvironment::loadObstaclesXML(std::string& obstacles_file)
     }
 
     for (size_t i = 0; i < obstacles.size(); i++) {
-        shared::Terrain terrain(obstacles[i].terrain.name,
+        frapu::TerrainSharedPtr terrain = std::make_shared<shared::Terrain>(obstacles[i].terrain.name,
+                                          obstacles[i].terrain.traversalCost,
+                                          obstacles[i].terrain.velocityDamping,
+                                          obstacles[i].terrain.traversable,
+                                          obstacles[i].terrain.observable);
+        /**shared::Terrain terrain(obstacles[i].terrain.name,
                                 obstacles[i].terrain.traversalCost,
                                 obstacles[i].terrain.velocityDamping,
                                 obstacles[i].terrain.traversable,
-                                obstacles[i].terrain.observable);
+                                obstacles[i].terrain.observable);*/
         if (obstacles[i].type == "box") {
             obstacles_.push_back(std::make_shared<shared::BoxObstacle>(obstacles[i].name,
                                  obstacles[i].x,
@@ -354,7 +347,7 @@ bool RobotEnvironment::loadObstaclesXML(std::string& obstacles_file)
                                  obstacles[i].extends[0],
                                  obstacles[i].extends[1],
                                  obstacles[i].extends[2],
-                                 terrain));
+                                 terrain));	    
         }
 
         else if (obstacles[i].type == "sphere") {
@@ -368,7 +361,9 @@ bool RobotEnvironment::loadObstaclesXML(std::string& obstacles_file)
             assert(false && "Utils: ERROR: Obstacle has an unknown type!");
         }
 
-        obstacles_[obstacles_.size() - 1]->setStandardColor(obstacles[i].d_color, obstacles[i].a_color);
+        static_cast<shared::Obstacle*>(obstacles_[obstacles_.size() - 1].get())->setStandardColor(obstacles[i].d_color, obstacles[i].a_color);
+
+        //obstacles_[obstacles_.size() - 1]->setStandardColor(obstacles[i].d_color, obstacles[i].a_color);
     }
 
     return true;
@@ -398,12 +393,13 @@ void RobotEnvironment::generateRandomScene(unsigned int& numObstacles)
         double rand_x = uniform_dist(*generator_);
         double rand_y = uniform_dist(*generator_);
         double rand_z = uniform_distZ(*generator_);
-
-        shared::Terrain terrain("t" + std::to_string(i),
+	
+	frapu::TerrainSharedPtr terrain = std::make_shared<shared::Terrain>("t" + std::to_string(i),
                                 0.0,
                                 0.0,
                                 false,
                                 true);
+        
         std::string box_name = "b" + std::to_string(i);
         obstacles_.push_back(std::make_shared<shared::BoxObstacle>(box_name,
                              rand_x,
@@ -414,7 +410,7 @@ void RobotEnvironment::generateRandomScene(unsigned int& numObstacles)
                              0.25,
                              terrain));
         std::vector<double> diffuseColor( {0.5, 0.5, 0.5, 0.5});
-        obstacles_[obstacles_.size() - 1]->setStandardColor(diffuseColor, diffuseColor);
+        static_cast<shared::Obstacle*>(obstacles_[obstacles_.size() - 1].get())->setStandardColor(diffuseColor, diffuseColor);
         std::vector<double> dims( {rand_x, rand_y, rand_z, 0.25, 0.25, 0.25});
         robot_->addBox(box_name, dims);
 
@@ -507,20 +503,20 @@ bool RobotEnvironment::loadGoalArea(std::string& env_file)
     return true;
 }
 
-std::shared_ptr<shared::Obstacle> RobotEnvironment::makeObstacle(std::string obstacleName,
+frapu::ObstacleSharedPtr RobotEnvironment::makeObstacle(std::string obstacleName,
         std::string obstacleType,
         std::vector<double>& dims,
         bool traversable,
         double traversalCost,
         bool observable) const
 {
-    shared::Terrain terrain("terr",
+    frapu::TerrainSharedPtr terrain = std::make_shared<shared::Terrain>("terr",
                             traversalCost,
                             0.0,
                             traversable,
                             observable);
-
-    std::shared_ptr<shared::Obstacle> obstacle;
+    
+    frapu::ObstacleSharedPtr obstacle;
     if (obstacleType == "box") {
         obstacle = std::make_shared<shared::BoxObstacle>(obstacleName,
                    dims[0],
@@ -548,7 +544,7 @@ std::shared_ptr<shared::Obstacle> RobotEnvironment::makeObstacle(std::string obs
     return obstacle;
 }
 
-std::shared_ptr<shared::Obstacle> RobotEnvironment::getObstacle(std::string name)
+frapu::ObstacleSharedPtr RobotEnvironment::getObstacle(std::string name)
 {
     for (size_t i = 0; i < obstacles_.size(); i++) {
         if (obstacles_[i]->getName() == name) {
@@ -560,7 +556,7 @@ std::shared_ptr<shared::Obstacle> RobotEnvironment::getObstacle(std::string name
     return nullptr;
 }
 
-bool RobotEnvironment::addObstacle(std::shared_ptr<shared::Obstacle>& obstacle)
+bool RobotEnvironment::addObstacle(frapu::ObstacleSharedPtr& obstacle)
 {
     for (size_t i = 0; i < obstacles_.size(); i++) {
         if (obstacles_[i]->getName() == obstacle->getName()) {
@@ -570,8 +566,9 @@ bool RobotEnvironment::addObstacle(std::shared_ptr<shared::Obstacle>& obstacle)
     }
 
     obstacles_.push_back(obstacle);
+    environmentInfo_->obstacles.push_back(obstacle);
     std::vector<double> dimensions;
-    obstacle->getDimensions(dimensions);
+    static_cast<shared::Obstacle*>(obstacle.get())->getDimensions(dimensions);
     robot_->addBox(obstacle->getName(), dimensions);
 }
 
@@ -589,6 +586,7 @@ bool RobotEnvironment::removeObstacle(std::string obstacleName)
     for (size_t i = 0; i < obstacles_.size(); i++) {
         if (obstacles_[i]->getName() == obstacleName) {
             obstacles_.erase(obstacles_.begin() + i);
+            environmentInfo_->obstacles.erase(environmentInfo_->obstacles.begin() + i);
             robot_->removeBox(obstacleName);
             return true;
         }
@@ -598,7 +596,19 @@ bool RobotEnvironment::removeObstacle(std::string obstacleName)
     return true;
 }
 
-BOOST_PYTHON_MODULE(librobot_environment)
+void RobotEnvironment::makeEnvironmentInfo()
+{
+    environmentInfo_ = std::make_shared<frapu::EnvironmentInfo>();
+    environmentInfo_->obstacles = obstacles_;
+    robot_->setEnvironmentInfo(environmentInfo_);
+}
+
+frapu::EnvironmentInfoSharedPtr RobotEnvironment::getEnvironmentInfo() const
+{
+    return environmentInfo_;
+}
+
+/**BOOST_PYTHON_MODULE(librobot_environment)
 {
 #include "include/Terrain.hpp"
     using namespace boost::python;
@@ -643,7 +653,7 @@ BOOST_PYTHON_MODULE(librobot_environment)
     .def("getObstacles", &RobotEnvironment::getObstaclesPy)
 
     ;
-}
+}*/
 
 
 

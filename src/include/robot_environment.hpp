@@ -9,7 +9,6 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/foreach.hpp>
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <boost/random.hpp>
@@ -18,6 +17,7 @@
 #include "SphereObstacle.hpp"
 #include <robots/ManipulatorRobot.hpp>
 #include <robots/DubinRobot.hpp>
+#include <frapu_core/core.hpp>
 
 namespace shared
 {
@@ -27,7 +27,7 @@ class RobotEnvironment
 public:
     RobotEnvironment();
 
-    void setObstacles(std::vector<std::shared_ptr<Obstacle>>& obstacles);
+    void setObstacles(std::vector<frapu::ObstacleSharedPtr>& obstacles);
 
     void setRobot(std::shared_ptr<shared::Robot>& robot);
 
@@ -37,14 +37,12 @@ public:
 
     std::vector<std::vector<double>> loadGoalStatesFromFile(std::string filename);
 
-    void getObstacles(std::vector<std::shared_ptr<shared::Obstacle> >& obstacles);
-    
+    void getObstacles(std::vector<frapu::ObstacleSharedPtr>& obstacles);
+
     /**
      * Get all observable obstacles
      */
-    void getObservableObstacles(std::vector<std::shared_ptr<shared::Obstacle> >& obstacles) const;
-
-    std::vector<std::shared_ptr<shared::ObstacleWrapper>> getObstaclesPy();
+    void getObservableObstacles(std::vector<frapu::ObstacleSharedPtr>& obstacles) const;
 
     void getGoalArea(std::vector<double>& goal_area);
 
@@ -88,9 +86,9 @@ public:
             unsigned long& seed,
             std::string& type);
 
-    template <class RobotType> 
+    template <class RobotType>
     std::shared_ptr<shared::RobotEnvironment> clone() {
-        std::shared_ptr<shared::RobotEnvironment> env = std::make_shared<shared::RobotEnvironment>();        
+        std::shared_ptr<shared::RobotEnvironment> env = std::make_shared<shared::RobotEnvironment>();
         env->createRobot<RobotType>(robot_path_);
         env->getRobot()->makeObservationSpace(robot_->getObservationSpace()->getObservationSpaceInfo());
 
@@ -113,11 +111,12 @@ public:
         env->getRobot()->makeObservationDistribution(meanObs, covarObs, seedObs);
         env->setGoalStates(goal_states_);
         env->setObstacles(obstacles_);
+        env->makeEnvironmentInfo();
         env->setGoalArea(goal_area_);
         if (dynamic_model_ == "newton") {
             env->getRobot()->setNewtonModel();
         }
-        
+
         env->setGravityConstant(gravity_constant_);
         std::vector<double> goal_position( {goal_area_[0], goal_area_[1], goal_area_[2]});
         double goal_radius = goal_area_[3];
@@ -132,20 +131,24 @@ public:
     void generateRandomScene(unsigned int& numObstacles);
 
     /**** Methods to handle changes in the environment ****/
-    std::shared_ptr<shared::Obstacle> makeObstacle(std::string obstacleName,
-            std::string obstacleType,
-            std::vector<double>& dims,
-            bool traversable,
-            double traversalCost,
-            bool observable) const;
+    frapu::ObstacleSharedPtr makeObstacle(std::string obstacleName,
+                                          std::string obstacleType,
+                                          std::vector<double>& dims,
+                                          bool traversable,
+                                          double traversalCost,
+                                          bool observable) const;
 
-    bool addObstacle(std::shared_ptr<shared::Obstacle>& obstacle);
+    bool addObstacle(frapu::ObstacleSharedPtr& obstacle);
 
-    std::shared_ptr<shared::Obstacle> getObstacle(std::string name);
+    frapu::ObstacleSharedPtr getObstacle(std::string name);
 
     bool removeObstacle(std::string obstacleName);
 
     bool removeObstacles(std::vector<std::string>& obstacle_names);
+
+    void makeEnvironmentInfo();
+
+    frapu::EnvironmentInfoSharedPtr getEnvironmentInfo() const;
 
 private:
     std::string robot_path_;
@@ -160,7 +163,7 @@ private:
 
     double gravity_constant_;
 
-    std::vector<std::shared_ptr<Obstacle>> obstacles_;
+    std::vector<frapu::ObstacleSharedPtr> obstacles_;
 
     std::shared_ptr<shared::Robot> robot_;
 
@@ -175,6 +178,8 @@ private:
     bool loadGoalArea(std::string& env_file);
 
     std::shared_ptr<boost::mt19937> generator_;
+
+    frapu::EnvironmentInfoSharedPtr environmentInfo_;
 
 };
 

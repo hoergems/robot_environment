@@ -25,19 +25,12 @@ struct VecToList {
     }
 };
 
-Obstacle::Obstacle(std::string name, const Terrain& terrain):
-    collision_object_ptr_(nullptr),
-    terrain_(terrain),
-    name_(name),
+Obstacle::Obstacle(std::string& name, frapu::TerrainSharedPtr& terrain):
+    frapu::Obstacle(name, terrain),
     diffuse_color_(),
     ambient_color_()
 {
 
-}
-
-std::shared_ptr<Terrain> Obstacle::getTerrain() const
-{
-    return std::make_shared<Terrain>(terrain_);
 }
 
 void Obstacle::setStandardColor(std::vector<double>& diffuseColor,
@@ -69,34 +62,34 @@ void Obstacle::setStandardColor(std::vector<double>& diffuseColor,
 
 bool Obstacle::isTraversable() const
 {
-    return terrain_.isTraversable();
+    return terrain_->isTraversable();
 }
 
 double Obstacle::getExternalForce()
 {
-    return terrain_.getVelocityDamping();
+    return static_cast<shared::Terrain*>(terrain_.get())->getVelocityDamping();
 }
 
 bool Obstacle::in_collision(std::vector<double>& point)
 {
     Vec3f p_vec(point[0], point[1], point[2]);
-    return collision_object_ptr_->getAABB().contain(p_vec);
+    return collisionObject_->getAABB().contain(p_vec);
 }
 
 bool Obstacle::in_collision_point(std::vector<double>& point)
 {
     Vec3f p_vec(point[0], point[1], point[2]);
-    return collision_object_ptr_->getAABB().contain(p_vec);
+    return collisionObject_->getAABB().contain(p_vec);
 }
 
-double Obstacle::distance(std::vector<std::shared_ptr<fcl::CollisionObject>>& other_collision_objects) const
+double Obstacle::distance(std::vector<frapu::CollisionObjectSharedPtr>& other_collision_objects) const
 {
     double min_distance = 1000000.0;
     for (size_t i = 0; i < other_collision_objects.size(); i++) {
         fcl::DistanceRequest request;
         fcl::DistanceResult result;
         fcl::distance(other_collision_objects[i].get(),
-                      collision_object_ptr_.get(),
+                      collisionObject_.get(),
                       request,
                       result);
         if (result.min_distance < min_distance) {
@@ -107,13 +100,13 @@ double Obstacle::distance(std::vector<std::shared_ptr<fcl::CollisionObject>>& ot
     return min_distance;
 }
 
-bool Obstacle::in_collision(std::vector<std::shared_ptr<fcl::CollisionObject>>& other_collision_objects) const
+bool Obstacle::inCollision(std::vector<frapu::CollisionObjectSharedPtr>& collisionObjects) const
 {
-    for (size_t i = 0; i < other_collision_objects.size(); i++) {
+    for (size_t i = 0; i < collisionObjects.size(); i++) {
         fcl::CollisionRequest request;
         fcl::CollisionResult result;
-        fcl::collide(other_collision_objects[i].get(),
-                     collision_object_ptr_.get(),
+        fcl::collide(collisionObjects[i].get(),
+                     collisionObject_.get(),
                      request,
                      result);
         if (result.isCollision()) {
@@ -127,7 +120,7 @@ bool Obstacle::in_collision(std::vector<std::shared_ptr<fcl::CollisionObject>>& 
 bool Obstacle::in_collision(const std::vector<std::shared_ptr<Obstacle> >& other_obstacles) const
 {
     for (size_t i = 0; i < other_obstacles.size(); i++) {
-        if (collision_object_ptr_->getAABB().overlap(other_obstacles[i]->getCollisionObject()->getAABB())) {
+        if (collisionObject_->getAABB().overlap(other_obstacles[i]->getCollisionObject()->getAABB())) {
             return true;
         }
     }
@@ -135,8 +128,8 @@ bool Obstacle::in_collision(const std::vector<std::shared_ptr<Obstacle> >& other
     return false;
 }
 
-bool Obstacle::in_collision(std::shared_ptr<fcl::CollisionObject>& collision_object_start,
-                            std::shared_ptr<fcl::CollisionObject>& collision_object_goal) const
+bool Obstacle::inCollisionContinuous(frapu::CollisionObjectSharedPtr& collisionObjectStart,
+                                     frapu::CollisionObjectSharedPtr& collisionObjectGoal) const
 {
     fcl::ContinuousCollisionRequest request(10,
                                             0.0001,
@@ -144,10 +137,10 @@ bool Obstacle::in_collision(std::shared_ptr<fcl::CollisionObject>& collision_obj
                                             GST_LIBCCD,
                                             CCDC_NAIVE);
     fcl::ContinuousCollisionResult result;
-    fcl::continuousCollide(collision_object_start.get(),
-                           collision_object_goal->getTransform(),
-                           collision_object_ptr_.get(),
-                           collision_object_ptr_->getTransform(),
+    fcl::continuousCollide(collisionObjectStart.get(),
+                           collisionObjectGoal->getTransform(),
+                           collisionObject_.get(),
+                           collisionObject_->getTransform(),
                            request,
                            result);
     return result.is_collide;
@@ -155,9 +148,9 @@ bool Obstacle::in_collision(std::shared_ptr<fcl::CollisionObject>& collision_obj
 
 double Obstacle::distancePy(boost::python::list& ns)
 {
-    std::vector<std::shared_ptr<fcl::CollisionObject>> other_collision_objects;
+    std::vector<frapu::CollisionObjectSharedPtr> other_collision_objects;
     for (int i = 0; i < len(ns); ++i) {
-        other_collision_objects.push_back(boost::python::extract<std::shared_ptr<fcl::CollisionObject>>(ns[i]));
+        other_collision_objects.push_back(boost::python::extract<frapu::CollisionObjectSharedPtr>(ns[i]));
     }
 
     return distance(other_collision_objects);
@@ -165,32 +158,22 @@ double Obstacle::distancePy(boost::python::list& ns)
 
 bool Obstacle::in_collision_discrete(boost::python::list& ns)
 {
-    std::vector<std::shared_ptr<fcl::CollisionObject>> other_collision_objects;
+    std::vector<frapu::CollisionObjectSharedPtr> other_collision_objects;
     for (int i = 0; i < len(ns); ++i) {
-        other_collision_objects.push_back(boost::python::extract<std::shared_ptr<fcl::CollisionObject>>(ns[i]));
+        other_collision_objects.push_back(boost::python::extract<frapu::CollisionObjectSharedPtr>(ns[i]));
     }
 
-    return in_collision(other_collision_objects);
+    return inCollision(other_collision_objects);
 }
 
 bool Obstacle::in_collision_continuous(boost::python::list& ns)
 {
 
-    std::shared_ptr<fcl::CollisionObject> collision_object_start =
-        boost::python::extract<std::shared_ptr<fcl::CollisionObject>>(ns[0]);
-    std::shared_ptr<fcl::CollisionObject> collision_object_goal =
-        boost::python::extract<std::shared_ptr<fcl::CollisionObject>>(ns[1]);
-    return in_collision(collision_object_start, collision_object_goal);
-}
-
-std::shared_ptr<fcl::CollisionObject> Obstacle::getCollisionObject() const
-{
-    return collision_object_ptr_;
-}
-
-std::string Obstacle::getName()
-{
-    return name_;
+    frapu::CollisionObjectSharedPtr collision_object_start =
+        boost::python::extract<frapu::CollisionObjectSharedPtr>(ns[0]);
+    frapu::CollisionObjectSharedPtr collision_object_goal =
+        boost::python::extract<frapu::CollisionObjectSharedPtr>(ns[1]);
+    return inCollisionContinuous(collision_object_start, collision_object_goal);
 }
 
 std::vector<double> Obstacle::getStandardDiffuseColor()
@@ -203,7 +186,7 @@ std::vector<double> Obstacle::getStandardAmbientColor()
     return ambient_color_;
 }
 
-BOOST_PYTHON_MODULE(libobstacle)
+/**BOOST_PYTHON_MODULE(libobstacle)
 {
 #include "include/Terrain.hpp"
     bool (ObstacleWrapper::*in_collision_d)(boost::python::list&) = &ObstacleWrapper::in_collision_discrete;
@@ -242,6 +225,6 @@ BOOST_PYTHON_MODULE(libobstacle)
     .def("getStandardAmbientColor", &ObstacleWrapper::getStandardAmbientColor)
     .def("distance", &ObstacleWrapper::distancePy)
     ;
-}
+}*/
 
 }

@@ -16,26 +16,28 @@
 #include "fcl/shape/geometric_shapes.h"
 #include "fcl/shape/geometric_shapes_utility.h"
 
-namespace shared {
+namespace shared
+{
 
-class SphereObstacle: public Obstacle  {
-    public:    
-        SphereObstacle(std::string name, 
-        		       double pos_x, 
-        		       double pos_y, 
-        		       double pos_z, 
-        		       double radius, 
-        		       const Terrain &terrain);
-                
-        virtual void createCollisionObject() override;
-	
-	virtual void getDimensions(std::vector<double> &dimensions) override;
+class SphereObstacle: public Obstacle
+{
+public:
+    SphereObstacle(std::string name,
+                   double pos_x,
+                   double pos_y,
+                   double pos_z,
+                   double radius,
+                   frapu::TerrainSharedPtr &terrain);
 
-    private:
-        double pos_x_;
-        double pos_y_;
-        double pos_z_;
-        double radius_;
+    virtual void createCollisionObject() override;
+
+    virtual void getDimensions(std::vector<double>& dimensions) override;
+
+private:
+    double pos_x_;
+    double pos_y_;
+    double pos_z_;
+    double radius_;
 };
 
 }

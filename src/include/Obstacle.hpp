@@ -19,9 +19,8 @@
 #include "fcl/continuous_collision.h"
 #include "fcl/shape/geometric_shapes.h"
 #include "fcl/shape/geometric_shapes_utility.h"
-//#include "utils.hpp"
-
 #include <mutex>
+#include <frapu_core/core.hpp>
 
 using std::cout;
 using std::endl;
@@ -29,11 +28,11 @@ using std::endl;
 namespace shared
 {
 
-class Obstacle
+class Obstacle: public frapu::Obstacle
 {
 public:
-
-    Obstacle(std::string name, const Terrain& terrain);
+    Obstacle(std::string& name, frapu::TerrainSharedPtr& terrain);
+    
     ~Obstacle() = default;
 
     //void set_dimensions(std::vector<double> &position, std::vector<double>)
@@ -45,23 +44,20 @@ public:
 
     //bool in_collision(std::vector<fcl::AABB> &other_collision_structures) const;
 
-    /**
-     * Checks if this obstacle collides with a CollisionObject
-     */
-    bool in_collision(std::vector<std::shared_ptr<fcl::CollisionObject>>& other_collision_objects) const;
+    virtual bool inCollision(std::vector<frapu::CollisionObjectSharedPtr> &collisionObjects) const override;
 
     /**
      * Computes the smallest distance between the obstacle and the given collision objects
      */
-    double distance(std::vector<std::shared_ptr<fcl::CollisionObject>>& other_collision_objects) const;
+    double distance(std::vector<frapu::CollisionObjectSharedPtr>& other_collision_objects) const;
 
     /**
      * Checks if the obstacle collides with another moving collision object.
      * The motion of of the other collision object is determined by a start
      * and goal transformation
      */
-    bool in_collision(std::shared_ptr<fcl::CollisionObject>& collision_object_start,
-                      std::shared_ptr<fcl::CollisionObject>&  collision_object_goal) const;
+    virtual bool inCollisionContinuous(frapu::CollisionObjectSharedPtr& collisionObjectStart,
+                                       frapu::CollisionObjectSharedPtr& collisionObjectGoal) const override;    
 
     /**
      * Checks if a point lies withing this obstacle
@@ -82,12 +78,6 @@ public:
 
     virtual double distancePy(boost::python::list& ns);
 
-
-    /**
-     * Get the terrain this obstacle consists of
-     */
-    std::shared_ptr<Terrain> getTerrain() const;
-
     /**
      * Gets the external force (proportional to the end effector velocity)
      * the underlying obstacles induces on the end effector.
@@ -95,24 +85,9 @@ public:
     virtual double getExternalForce();
 
     /**
-     * Get the underlying collision object
-     */
-    std::shared_ptr<fcl::CollisionObject> getCollisionObject() const;
-
-    /**
      * Determines if the obstacle is traversable
      */
-    bool isTraversable() const;
-
-    /**
-     * Create the underlying collision object
-     */
-    virtual void createCollisionObject() = 0;
-
-    /**
-     * Get the obstacle name
-     */
-    virtual std::string getName();
+    bool isTraversable() const;    
 
     /**
      * Set the obstacle's standard color
@@ -136,21 +111,16 @@ public:
     virtual void getDimensions(std::vector<double>& dimensions) = 0;
 
 protected:
-    std::string name_;
-
     std::vector<double> diffuse_color_;
 
     std::vector<double> ambient_color_;
-
-    std::shared_ptr<fcl::CollisionObject> collision_object_ptr_;
-
-    const shared::Terrain terrain_;
+    
 };
 
 /**
  * A Python wrapper to handle polymorphism
  */
-struct ObstacleWrapper: Obstacle, boost::python::wrapper<Obstacle> {
+/**struct ObstacleWrapper: Obstacle, boost::python::wrapper<Obstacle> {
 public:
     ObstacleWrapper(std::string name, const Terrain& terrain):
         Obstacle(name, terrain) {
@@ -196,7 +166,7 @@ public:
         this->get_override("getStandardAmbientColor")();
     }
 
-};
+};*/
 
 }
 

@@ -1,37 +1,33 @@
 #ifndef TERRAIN_HPP_
 #define TERRAIN_HPP_
-
 #include <string>
+#include <frapu_core/core.hpp>
 
-namespace shared {
+namespace shared
+{
 
-    class Terrain {
-        public:
-            Terrain(const std::string name, 
-                    const double traversalCost, 
-                    const double velocityDamping,
-                    bool traversable,
-		    bool observable);
+class Terrain: public frapu::Terrain
+{
+public:
+    Terrain(const std::string name,
+            const double traversalCost,
+            const double velocityDamping,
+            bool traversable,
+            bool observable);
 
-            ~Terrain() = default;
+    ~Terrain() = default;
 
-            const std::string getName() const;
+    const std::string getName() const;
 
-            const double getTraversalCost() const;
+    const double getTraversalCost() const;
 
-            const double getVelocityDamping() const;
+    const double getVelocityDamping() const;
 
-            const bool isTraversable() const;
-	    
-	    bool isObservable() const;
-
-        private:
-            const std::string name_;
-            const double traversalCost_;
-            const double velocityDamping_;
-            const bool traversable_;
-	    bool observable_;
-     };
+private:
+    const std::string name_;
+    const double traversalCost_;
+    const double velocityDamping_;    
+};
 
 }
 

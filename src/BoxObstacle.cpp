@@ -20,7 +20,7 @@ BoxObstacle::BoxObstacle(std::string name,
                          double size_x,
                          double size_y,
                          double size_z,
-                         const Terrain& terrain):
+                         frapu::TerrainSharedPtr& terrain):
     Obstacle(name, terrain),
     pos_x_(pos_x),
     pos_y_(pos_y),
@@ -57,8 +57,8 @@ void BoxObstacle::createCollisionObject()
     fcl::Transform3f box_tf;
     fcl::Transform3f trans;
     fcl::constructBox(box_aabb, trans, *box, box_tf);
-    collision_object_ptr_ = std::make_shared<fcl::CollisionObject>(boost::shared_ptr<CollisionGeometry>(box),
-                            box_tf);
+    collisionObject_ = std::make_shared<fcl::CollisionObject>(boost::shared_ptr<CollisionGeometry>(box),
+                       box_tf);
     /**cout << "size_x_" << size_x_ << endl;
     cout << "size_y_" << size_y_ << endl;
     cout << "size_z_" << size_z_ << endl;
