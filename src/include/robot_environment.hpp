@@ -54,7 +54,7 @@ public:
      * Create the robots
      */
     template <class RobotType> bool createRobot(std::string robot_file) {
-        if (file_exists(robot_file)) {
+        if (frapu::fileExists(robot_file)) {
             robot_ = std::make_shared<RobotType>(robot_file);
             robot_path_ = robot_file;
             return true;
@@ -109,9 +109,9 @@ public:
 
         env->getRobot()->makeProcessDistribution(meanProcess, covarProcess, seedProc);
         env->getRobot()->makeObservationDistribution(meanObs, covarObs, seedObs);
-        env->setGoalStates(goal_states_);
-        env->setObstacles(obstacles_);
-        env->makeEnvironmentInfo();
+        env->setGoalStates(goal_states_);	
+	env->setEnvironmentInfo(environmentInfo_);
+        env->setObstacles(obstacles_);        
         env->setGoalArea(goal_area_);
         if (dynamic_model_ == "newton") {
             env->getRobot()->setNewtonModel();
@@ -147,6 +147,8 @@ public:
     bool removeObstacles(std::vector<std::string>& obstacle_names);
 
     void makeEnvironmentInfo();
+    
+    void setEnvironmentInfo(std::shared_ptr<frapu::EnvironmentInfo> &environmentInfo);
 
     frapu::EnvironmentInfoSharedPtr getEnvironmentInfo() const;
 
@@ -170,8 +172,6 @@ private:
     std::vector<double> goal_area_;
 
     std::vector<std::vector<double>> goal_states_;
-
-    bool file_exists(std::string& filename);
 
     bool loadObstaclesXML(std::string& obstacles_file);
 
