@@ -259,7 +259,7 @@ bool RobotEnvironment::loadObstaclesXML(std::string& obstacles_file)
 
                             obstacles[obstacles.size() - 1].d_color.push_back(color_vec[0]);
                             obstacles[obstacles.size() - 1].d_color.push_back(color_vec[1]);
-                            obstacles[obstacles.size() - 1].d_color.push_back(color_vec[2]);
+                            obstacles[obstacles.size() - 1].d_color.push_back(color_vec[2]);			    
 
                         }
 
@@ -275,7 +275,7 @@ bool RobotEnvironment::loadObstaclesXML(std::string& obstacles_file)
 
                             obstacles[obstacles.size() - 1].a_color.push_back(color_vec[0]);
                             obstacles[obstacles.size() - 1].a_color.push_back(color_vec[1]);
-                            obstacles[obstacles.size() - 1].a_color.push_back(color_vec[2]);
+                            obstacles[obstacles.size() - 1].a_color.push_back(color_vec[2]);			    
                         }
 
                         obstacles[obstacles.size() - 1].name = name;

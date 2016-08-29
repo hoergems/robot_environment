@@ -76,6 +76,17 @@ if(PKG_CONFIG_FOUND)
     link_directories(${TINYXML_LIBRARY_DIRS})     
 endif()
 
+############################# LOAD ROBOT_HEADERS #############################
+if(PKG_CONFIG_FOUND)
+    pkg_check_modules(ROBOT_HEADERS robot_headers)
+    if(NOT ROBOT_HEADERS_FOUND)
+       message(FATAL_ERROR "ROBOT_HEADERS could not be found")
+    endif()
+    include_directories(${ROBOT_HEADERS_INCLUDE_DIRS})
+    link_directories(${ROBOT_HEADERS_LIBRARY_DIRS}) 
+    message("-- ROBOT_HEADERS LIB DIRS ${ROBOT_HEADERS_LIBRARY_DIRS}")    
+endif()
+
 ############################# LOAD ROBOTS #############################
 if(PKG_CONFIG_FOUND)    
     pkg_check_modules(ROBOTS robots)
