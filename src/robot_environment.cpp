@@ -103,6 +103,10 @@ void RobotEnvironment::setEnvironmentInfo(std::shared_ptr<frapu::EnvironmentInfo
     robot_->setEnvironmentInfo(environmentInfo_);
 }
 
+void RobotEnvironment::updateEnvironment(std::vector<double> &robotState) {
+    robot_->updateRobot(robotState);
+}
+
 void RobotEnvironment::setRobot(std::shared_ptr<shared::Robot>& robot)
 {
     robot_ = robot;

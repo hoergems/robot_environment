@@ -151,6 +151,8 @@ public:
     void setEnvironmentInfo(std::shared_ptr<frapu::EnvironmentInfo> &environmentInfo);
 
     frapu::EnvironmentInfoSharedPtr getEnvironmentInfo() const;
+    
+    void updateEnvironment(std::vector<double> &robotState);
 
 private:
     std::string robot_path_;
