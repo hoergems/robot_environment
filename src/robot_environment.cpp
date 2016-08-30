@@ -112,28 +112,6 @@ void RobotEnvironment::setRobot(std::shared_ptr<shared::Robot>& robot)
     robot_ = robot;
 }
 
-bool RobotEnvironment::createManipulatorRobot(std::string robot_file)
-{
-    if (frapu::fileExists(robot_file)) {
-        robot_ = std::make_shared<shared::ManipulatorRobot>(robot_file);
-        robot_path_ = robot_file;
-        return true;
-    }
-
-    return false;
-}
-
-bool RobotEnvironment::createDubinRobot(std::string robot_file)
-{
-    if (frapu::fileExists(robot_file)) {
-        robot_ = std::make_shared<shared::DubinRobot>(robot_file);
-        robot_path_ = robot_file;
-        return true;
-    }
-
-    return false;
-}
-
 std::shared_ptr<shared::Robot> RobotEnvironment::getRobot()
 {
     return robot_;

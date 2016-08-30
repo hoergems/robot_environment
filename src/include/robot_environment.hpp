@@ -15,8 +15,7 @@
 #include <boost/random/random_device.hpp>
 #include "BoxObstacle.hpp"
 #include "SphereObstacle.hpp"
-#include <robots/ManipulatorRobot.hpp>
-#include <robots/DubinRobot.hpp>
+#include <robot_headers/robot.hpp>
 #include <frapu_core/core.hpp>
 
 namespace shared
@@ -61,11 +60,7 @@ public:
         }
 
         return false;
-    }
-
-    bool createManipulatorRobot(std::string robot_file);
-
-    bool createDubinRobot(std::string robot_file);
+    }   
 
     std::shared_ptr<boost::mt19937> getRandomGenerator();
 
