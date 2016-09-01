@@ -50,10 +50,11 @@ public:
     /**
      * Create the robots
      */
-    template <class RobotType> bool createRobot(std::string robot_file) {
-        if (frapu::fileExists(robot_file)) {
-            robot_ = std::make_shared<RobotType>(robot_file);
-            robot_path_ = robot_file;
+    template <class RobotType> bool createRobot(std::string robotFile, std::string configFile) {
+        if (frapu::fileExists(robotFile) && frapu::fileExists(configFile)) {
+            robot_ = std::make_shared<RobotType>(robotFile, configFile);
+            robot_path_ = robotFile;
+	    config_path_ = configFile;
             return true;
         }
 
@@ -82,7 +83,7 @@ public:
     template <class RobotType>
     std::shared_ptr<shared::RobotEnvironment> clone() {
         std::shared_ptr<shared::RobotEnvironment> env = std::make_shared<shared::RobotEnvironment>();
-        env->createRobot<RobotType>(robot_path_);
+        env->createRobot<RobotType>(robot_path_, config_path_);
         env->getRobot()->makeStateSpace();
         env->getRobot()->makeObservationSpace(robot_->getObservationSpace()->getObservationSpaceInfo());
 
@@ -150,6 +151,8 @@ public:
 
 private:
     std::string robot_path_;
+    
+    std::string config_path_;
 
     std::string environment_path_;
 

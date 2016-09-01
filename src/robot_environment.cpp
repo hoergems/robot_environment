@@ -45,6 +45,7 @@ RobotEnvironment::RobotEnvironment():
     robot_(nullptr),
     generator_(nullptr),
     robot_path_(""),
+    config_path_(""),
     environment_path_(""),
     goal_states_(),
     gravity_constant_(0.0),
