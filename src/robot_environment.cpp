@@ -89,13 +89,14 @@ std::shared_ptr<boost::mt19937> RobotEnvironment::getRandomGenerator()
 
 void RobotEnvironment::setObstacles(std::vector<frapu::ObstacleSharedPtr>& obstacles)
 {
-    obstacles_ = obstacles;
+    obstacles_ = obstacles;    
     environmentInfo_->obstacles = obstacles;
 }
 
 void RobotEnvironment::makeEnvironmentInfo()
 {
-    environmentInfo_ = std::make_shared<frapu::EnvironmentInfo>();    
+    environmentInfo_ = std::make_shared<frapu::EnvironmentInfo>();
+    environmentInfo_->obstacles = obstacles_;    
     robot_->setEnvironmentInfo(environmentInfo_);
 }
 
@@ -195,8 +196,7 @@ bool RobotEnvironment::loadObstaclesXML(std::string& obstacles_file)
         cout << "RobotEnvironment: ERROR: Environment file '" << obstacles_file << "' doesn't exist" << endl;
         return false;
     }
-    obstacles_.clear();
-    environmentInfo_->obstacles.clear();
+    obstacles_.clear();    
     std::vector<ObstacleStruct> obstacles;
     TiXmlDocument xml_doc;
     xml_doc.LoadFile(obstacles_file);
@@ -338,8 +338,7 @@ bool RobotEnvironment::loadObstaclesXML(std::string& obstacles_file)
                                  obstacles[i].extends[1],
                                  obstacles[i].extends[2],
                                  terrain);	    
-            obstacles_.push_back(obstacle);
-            environmentInfo_->obstacles.push_back(obstacle);	    
+            obstacles_.push_back(obstacle);              
         }
 
         else if (obstacles[i].type == "sphere") {
@@ -349,14 +348,12 @@ bool RobotEnvironment::loadObstaclesXML(std::string& obstacles_file)
                                  obstacles[i].z,
                                  obstacles[i].extends[0],
                                  terrain);
-            obstacles_.push_back(obstacle);
- 	    environmentInfo_->obstacles.push_back(obstacle);
+            obstacles_.push_back(obstacle); 	    
         } else {
             assert(false && "Utils: ERROR: Obstacle has an unknown type!");
         }
 
         static_cast<shared::Obstacle*>(obstacles_[obstacles_.size() - 1].get())->setStandardColor(obstacles[i].d_color, obstacles[i].a_color);
-
         //obstacles_[obstacles_.size() - 1]->setStandardColor(obstacles[i].d_color, obstacles[i].a_color);
     }
 

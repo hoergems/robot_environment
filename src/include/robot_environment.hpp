@@ -52,9 +52,11 @@ public:
      */
     template <class RobotType> bool createRobot(std::string robotFile, std::string configFile) {
         if (frapu::fileExists(robotFile) && frapu::fileExists(configFile)) {
+	    cout << "config file " << configFile << endl;
             robot_ = std::make_shared<RobotType>(robotFile, configFile);
             robot_path_ = robotFile;
 	    config_path_ = configFile;
+	    cout << "Robot created" << endl;
             return true;
         }
 
