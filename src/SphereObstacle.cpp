@@ -6,7 +6,7 @@ using std::endl;
 
 using namespace fcl;
 
-namespace shared
+namespace frapu
 {
 
 SphereObstacle::SphereObstacle(std::string name,
@@ -15,7 +15,7 @@ SphereObstacle::SphereObstacle(std::string name,
                                double pos_z,
                                double radius,
                                frapu::TerrainSharedPtr& terrain):
-    Obstacle(name, terrain),
+    ObstacleImpl(name, terrain),
     pos_x_(pos_x),
     pos_y_(pos_y),
     pos_z_(pos_z),

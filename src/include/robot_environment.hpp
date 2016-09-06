@@ -18,7 +18,7 @@
 #include <robot_headers/robot.hpp>
 #include <frapu_core/core.hpp>
 
-namespace shared
+namespace frapu
 {
 
 class RobotEnvironment
@@ -28,9 +28,9 @@ public:
 
     void setObstacles(std::vector<frapu::ObstacleSharedPtr>& obstacles);
 
-    void setRobot(std::shared_ptr<shared::Robot>& robot);
+    void setRobot(std::shared_ptr<frapu::Robot>& robot);
 
-    std::shared_ptr<shared::Robot> getRobot();
+    std::shared_ptr<frapu::Robot> getRobot();
 
     bool loadEnvironment(std::string environment_file);
 
@@ -83,8 +83,8 @@ public:
             std::string& type);
 
     template <class RobotType>
-    std::shared_ptr<shared::RobotEnvironment> clone() {
-        std::shared_ptr<shared::RobotEnvironment> env = std::make_shared<shared::RobotEnvironment>();
+    std::shared_ptr<RobotEnvironment> clone() {
+        std::shared_ptr<RobotEnvironment> env = std::make_shared<RobotEnvironment>();
         env->createRobot<RobotType>(robot_path_, config_path_);
         env->getRobot()->makeStateSpace();
         env->getRobot()->makeObservationSpace(robot_->getObservationSpace()->getObservationSpaceInfo());
@@ -118,6 +118,7 @@ public:
         std::vector<double> goal_position( {goal_area_[0], goal_area_[1], goal_area_[2]});
         double goal_radius = goal_area_[3];
         env->getRobot()->setGoalArea(goal_position, goal_radius);
+	env->getRobot()->setupHeuristic();
         return env;
     }
 
@@ -168,7 +169,7 @@ private:
 
     std::vector<frapu::ObstacleSharedPtr> obstacles_;
 
-    std::shared_ptr<shared::Robot> robot_;
+    std::shared_ptr<frapu::Robot> robot_;
 
     std::vector<double> goal_area_;
 

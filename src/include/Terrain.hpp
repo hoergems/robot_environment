@@ -3,19 +3,19 @@
 #include <string>
 #include <frapu_core/core.hpp>
 
-namespace shared
+namespace frapu
 {
 
-class Terrain: public frapu::Terrain
+class TerrainImpl: public Terrain
 {
 public:
-    Terrain(const std::string name,
+    TerrainImpl(const std::string name,
             const double traversalCost,
             const double velocityDamping,
             bool traversable,
             bool observable);
 
-    ~Terrain() = default;
+    ~TerrainImpl() = default;
 
     const std::string getName() const;
 

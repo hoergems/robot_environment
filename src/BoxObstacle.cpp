@@ -10,7 +10,7 @@ using std::max;
 using namespace fcl;
 using namespace boost::python;
 
-namespace shared
+namespace frapu
 {
 
 BoxObstacle::BoxObstacle(std::string name,
@@ -21,7 +21,7 @@ BoxObstacle::BoxObstacle(std::string name,
                          double size_y,
                          double size_z,
                          frapu::TerrainSharedPtr& terrain):
-    Obstacle(name, terrain),
+    ObstacleImpl(name, terrain),
     pos_x_(pos_x),
     pos_y_(pos_y),
     pos_z_(pos_z),

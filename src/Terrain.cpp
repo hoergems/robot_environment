@@ -1,32 +1,32 @@
 #include "include/Terrain.hpp"
 
-namespace shared
+namespace frapu
 {
 
-Terrain::Terrain(const std::string name,
-                 const double traversalCost,
-                 const double velocityDamping,
-                 bool traversable,
-                 bool observable):
-    frapu::Terrain(traversable, observable),
+TerrainImpl::TerrainImpl(const std::string name,
+                         const double traversalCost,
+                         const double velocityDamping,
+                         bool traversable,
+                         bool observable):
+    Terrain(traversable, observable),
     name_(name),
     traversalCost_(traversalCost),
-    velocityDamping_(velocityDamping)    
+    velocityDamping_(velocityDamping)
 {
 
 }
 
-const std::string Terrain::getName() const
+const std::string TerrainImpl::getName() const
 {
     return name_;
 }
 
-const double Terrain::getTraversalCost() const
+const double TerrainImpl::getTraversalCost() const
 {
     return traversalCost_;
 }
 
-const double Terrain::getVelocityDamping() const
+const double TerrainImpl::getVelocityDamping() const
 {
     return velocityDamping_;
 }

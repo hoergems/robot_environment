@@ -25,22 +25,22 @@
 using std::cout;
 using std::endl;
 
-namespace shared
+namespace frapu
 {
 
-class Obstacle: public frapu::Obstacle
+class ObstacleImpl: public frapu::Obstacle
 {
 public:
-    Obstacle(std::string& name, frapu::TerrainSharedPtr& terrain);
+    ObstacleImpl(std::string& name, frapu::TerrainSharedPtr& terrain);
     
-    ~Obstacle() = default;
+    ~ObstacleImpl() = default;
 
     //void set_dimensions(std::vector<double> &position, std::vector<double>)
 
     /**
      * Checks if this obstacle collides with another obstacle
      * */
-    bool in_collision(const std::vector<std::shared_ptr<Obstacle> >& other_obstacles) const;
+    bool in_collision(const std::vector<std::shared_ptr<ObstacleImpl> >& other_obstacles) const;
 
     //bool in_collision(std::vector<fcl::AABB> &other_collision_structures) const;
 

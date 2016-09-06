@@ -1,6 +1,6 @@
 #include "include/robot_environment.hpp"
 
-namespace shared
+namespace frapu
 {
 
 template<class T>
@@ -109,12 +109,12 @@ void RobotEnvironment::updateEnvironment(const frapu::RobotStateSharedPtr &state
     robot_->updateRobot(state);
 }
 
-void RobotEnvironment::setRobot(std::shared_ptr<shared::Robot>& robot)
+void RobotEnvironment::setRobot(std::shared_ptr<frapu::Robot>& robot)
 {
     robot_ = robot;
 }
 
-std::shared_ptr<shared::Robot> RobotEnvironment::getRobot()
+std::shared_ptr<frapu::Robot> RobotEnvironment::getRobot()
 {
     return robot_;
 }
@@ -324,13 +324,13 @@ bool RobotEnvironment::loadObstaclesXML(std::string& obstacles_file)
     }
 
     for (size_t i = 0; i < obstacles.size(); i++) {
-        frapu::TerrainSharedPtr terrain = std::make_shared<shared::Terrain>(obstacles[i].terrain.name,
+        frapu::TerrainSharedPtr terrain = std::make_shared<frapu::TerrainImpl>(obstacles[i].terrain.name,
                                           obstacles[i].terrain.traversalCost,
                                           obstacles[i].terrain.velocityDamping,
                                           obstacles[i].terrain.traversable,
                                           obstacles[i].terrain.observable);        
         if (obstacles[i].type == "box") {
-	    frapu::ObstacleSharedPtr obstacle = std::make_shared<shared::BoxObstacle>(obstacles[i].name,
+	    frapu::ObstacleSharedPtr obstacle = std::make_shared<frapu::BoxObstacle>(obstacles[i].name,
                                  obstacles[i].x,
                                  obstacles[i].y,
                                  obstacles[i].z,
@@ -342,7 +342,7 @@ bool RobotEnvironment::loadObstaclesXML(std::string& obstacles_file)
         }
 
         else if (obstacles[i].type == "sphere") {
-	    frapu::ObstacleSharedPtr obstacle = std::make_shared<shared::SphereObstacle>(obstacles[i].name,
+	    frapu::ObstacleSharedPtr obstacle = std::make_shared<frapu::SphereObstacle>(obstacles[i].name,
                                  obstacles[i].x,
                                  obstacles[i].y,
                                  obstacles[i].z,
@@ -353,7 +353,7 @@ bool RobotEnvironment::loadObstaclesXML(std::string& obstacles_file)
             assert(false && "Utils: ERROR: Obstacle has an unknown type!");
         }
 
-        static_cast<shared::Obstacle*>(obstacles_[obstacles_.size() - 1].get())->setStandardColor(obstacles[i].d_color, obstacles[i].a_color);
+        static_cast<frapu::ObstacleImpl*>(obstacles_[obstacles_.size() - 1].get())->setStandardColor(obstacles[i].d_color, obstacles[i].a_color);
         //obstacles_[obstacles_.size() - 1]->setStandardColor(obstacles[i].d_color, obstacles[i].a_color);
     }
 
@@ -380,14 +380,14 @@ void RobotEnvironment::generateRandomScene(unsigned int& numObstacles)
         double rand_y = uniform_dist(*generator_);
         double rand_z = uniform_distZ(*generator_);
 	
-	frapu::TerrainSharedPtr terrain = std::make_shared<shared::Terrain>("t" + std::to_string(i),
+	frapu::TerrainSharedPtr terrain = std::make_shared<frapu::TerrainImpl>("t" + std::to_string(i),
                                 0.0,
                                 0.0,
                                 false,
                                 true);
         
         std::string box_name = "b" + std::to_string(i);
-        obstacles_.push_back(std::make_shared<shared::BoxObstacle>(box_name,
+        obstacles_.push_back(std::make_shared<frapu::BoxObstacle>(box_name,
                              rand_x,
                              rand_y,
                              rand_z,
@@ -396,7 +396,7 @@ void RobotEnvironment::generateRandomScene(unsigned int& numObstacles)
                              0.25,
                              terrain));
         std::vector<double> diffuseColor( {0.5, 0.5, 0.5, 0.5});
-        static_cast<shared::Obstacle*>(obstacles_[obstacles_.size() - 1].get())->setStandardColor(diffuseColor, diffuseColor);
+        static_cast<frapu::ObstacleImpl*>(obstacles_[obstacles_.size() - 1].get())->setStandardColor(diffuseColor, diffuseColor);
         std::vector<double> dims( {rand_x, rand_y, rand_z, 0.25, 0.25, 0.25});
         robot_->addBox(box_name, dims);
 
@@ -496,7 +496,7 @@ frapu::ObstacleSharedPtr RobotEnvironment::makeObstacle(std::string obstacleName
         double traversalCost,
         bool observable) const
 {
-    frapu::TerrainSharedPtr terrain = std::make_shared<shared::Terrain>("terr",
+    frapu::TerrainSharedPtr terrain = std::make_shared<frapu::TerrainImpl>("terr",
                             traversalCost,
                             0.0,
                             traversable,
@@ -504,7 +504,7 @@ frapu::ObstacleSharedPtr RobotEnvironment::makeObstacle(std::string obstacleName
     
     frapu::ObstacleSharedPtr obstacle;
     if (obstacleType == "box") {
-        obstacle = std::make_shared<shared::BoxObstacle>(obstacleName,
+        obstacle = std::make_shared<frapu::BoxObstacle>(obstacleName,
                    dims[0],
                    dims[1],
                    dims[2],
@@ -515,7 +515,7 @@ frapu::ObstacleSharedPtr RobotEnvironment::makeObstacle(std::string obstacleName
     }
 
     else if (obstacleType == "sphere") {
-        obstacle = std::make_shared<shared::SphereObstacle>(obstacleName,
+        obstacle = std::make_shared<frapu::SphereObstacle>(obstacleName,
                    dims[0],
                    dims[1],
                    dims[2],
@@ -554,7 +554,7 @@ bool RobotEnvironment::addObstacle(frapu::ObstacleSharedPtr& obstacle)
     obstacles_.push_back(obstacle);
     environmentInfo_->obstacles.push_back(obstacle);
     std::vector<double> dimensions;
-    static_cast<shared::Obstacle*>(obstacle.get())->getDimensions(dimensions);
+    static_cast<frapu::ObstacleImpl*>(obstacle.get())->getDimensions(dimensions);
     robot_->addBox(obstacle->getName(), dimensions);
 }
 
@@ -604,11 +604,11 @@ frapu::EnvironmentInfoSharedPtr RobotEnvironment::getEnvironmentInfo() const
         .def(vector_indexing_suite<std::vector<int> >());
     }
 
-    class_<std::vector<std::shared_ptr<shared::ObstacleWrapper>> > ("v_obstacle")
-    .def(vector_indexing_suite<std::vector<std::shared_ptr<shared::ObstacleWrapper>> >());
-    to_python_converter < std::vector<std::shared_ptr<shared::ObstacleWrapper>, std::allocator<std::shared_ptr<shared::ObstacleWrapper>> >,
-                        VecToList<std::shared_ptr<shared::ObstacleWrapper>> > ();
-    register_ptr_to_python<std::shared_ptr<shared::ObstacleWrapper>>();
+    class_<std::vector<std::shared_ptr<frapu::ObstacleWrapper>> > ("v_obstacle")
+    .def(vector_indexing_suite<std::vector<std::shared_ptr<frapu::ObstacleWrapper>> >());
+    to_python_converter < std::vector<std::shared_ptr<frapu::ObstacleWrapper>, std::allocator<std::shared_ptr<frapu::ObstacleWrapper>> >,
+                        VecToList<std::shared_ptr<frapu::ObstacleWrapper>> > ();
+    register_ptr_to_python<std::shared_ptr<frapu::ObstacleWrapper>>();
 
     class_<ObstacleWrapper, boost::noncopyable>("Obstacle", init<std::string, Terrain>())
     .def("inCollisionDiscrete", in_collision_d)
@@ -623,7 +623,7 @@ frapu::EnvironmentInfoSharedPtr RobotEnvironment::getEnvironmentInfo() const
     .def("distance", &ObstacleWrapper::distancePy)
     ;
 
-    class_<RobotEnvironment, std::shared_ptr<shared::RobotEnvironment> >("RobotEnvironment", init<>())
+    class_<RobotEnvironment, std::shared_ptr<frapu::RobotEnvironment> >("RobotEnvironment", init<>())
     .def("getRobot", &RobotEnvironment::getRobot)
     .def("createManipulatorRobot", &RobotEnvironment::createManipulatorRobot)
     .def("createDubinRobot", &RobotEnvironment::createDubinRobot)

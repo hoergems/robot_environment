@@ -16,10 +16,10 @@
 #include "fcl/shape/geometric_shapes.h"
 #include "fcl/shape/geometric_shapes_utility.h"
 
-namespace shared
+namespace frapu
 {
 
-class SphereObstacle: public Obstacle
+class SphereObstacle: public ObstacleImpl
 {
 public:
     SphereObstacle(std::string name,

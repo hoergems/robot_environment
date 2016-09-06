@@ -11,7 +11,7 @@ using std::max;
 using namespace fcl;
 using namespace boost::python;
 
-namespace shared
+namespace frapu
 {
 
 template<class T>
@@ -25,7 +25,7 @@ struct VecToList {
     }
 };
 
-Obstacle::Obstacle(std::string& name, frapu::TerrainSharedPtr& terrain):
+ObstacleImpl::ObstacleImpl(std::string& name, frapu::TerrainSharedPtr& terrain):
     frapu::Obstacle(name, terrain),
     diffuse_color_(),
     ambient_color_()
@@ -33,8 +33,8 @@ Obstacle::Obstacle(std::string& name, frapu::TerrainSharedPtr& terrain):
 
 }
 
-void Obstacle::setStandardColor(std::vector<double>& diffuseColor,
-                                std::vector<double>& ambientColor)
+void ObstacleImpl::setStandardColor(std::vector<double>& diffuseColor,
+                                    std::vector<double>& ambientColor)
 {
     diffuse_color_.clear();
     ambient_color_.clear();
@@ -60,29 +60,31 @@ void Obstacle::setStandardColor(std::vector<double>& diffuseColor,
     }
 }
 
-bool Obstacle::isTraversable() const
+bool ObstacleImpl::isTraversable() const
 {
     return terrain_->isTraversable();
 }
 
-double Obstacle::getExternalForce()
+double ObstacleImpl::getExternalForce()
 {
-    return static_cast<shared::Terrain*>(terrain_.get())->getVelocityDamping();
+    return static_cast<TerrainImpl*>(terrain_.get())->getVelocityDamping();
 }
 
-bool Obstacle::in_collision(std::vector<double>& point)
-{
-    Vec3f p_vec(point[0], point[1], point[2]);
-    return collisionObject_->getAABB().contain(p_vec);
-}
 
-bool Obstacle::in_collision_point(std::vector<double>& point)
+
+bool ObstacleImpl::in_collision(std::vector<double>& point)
 {
     Vec3f p_vec(point[0], point[1], point[2]);
     return collisionObject_->getAABB().contain(p_vec);
 }
 
-double Obstacle::distance(std::vector<frapu::CollisionObjectSharedPtr>& other_collision_objects) const
+bool ObstacleImpl::in_collision_point(std::vector<double>& point)
+{
+    Vec3f p_vec(point[0], point[1], point[2]);
+    return collisionObject_->getAABB().contain(p_vec);
+}
+
+double ObstacleImpl::distance(std::vector<frapu::CollisionObjectSharedPtr>& other_collision_objects) const
 {
     double min_distance = 1000000.0;
     for (size_t i = 0; i < other_collision_objects.size(); i++) {
@@ -100,7 +102,7 @@ double Obstacle::distance(std::vector<frapu::CollisionObjectSharedPtr>& other_co
     return min_distance;
 }
 
-bool Obstacle::inCollision(std::vector<frapu::CollisionObjectSharedPtr>& collisionObjects) const
+bool ObstacleImpl::inCollision(std::vector<frapu::CollisionObjectSharedPtr>& collisionObjects) const
 {
     for (size_t i = 0; i < collisionObjects.size(); i++) {
         fcl::CollisionRequest request;
@@ -117,7 +119,7 @@ bool Obstacle::inCollision(std::vector<frapu::CollisionObjectSharedPtr>& collisi
     return false;
 }
 
-bool Obstacle::in_collision(const std::vector<std::shared_ptr<Obstacle> >& other_obstacles) const
+bool ObstacleImpl::in_collision(const std::vector<std::shared_ptr<ObstacleImpl> >& other_obstacles) const
 {
     for (size_t i = 0; i < other_obstacles.size(); i++) {
         if (collisionObject_->getAABB().overlap(other_obstacles[i]->getCollisionObject()->getAABB())) {
@@ -128,8 +130,8 @@ bool Obstacle::in_collision(const std::vector<std::shared_ptr<Obstacle> >& other
     return false;
 }
 
-bool Obstacle::inCollisionContinuous(frapu::CollisionObjectSharedPtr& collisionObjectStart,
-                                     frapu::CollisionObjectSharedPtr& collisionObjectGoal) const
+bool ObstacleImpl::inCollisionContinuous(frapu::CollisionObjectSharedPtr& collisionObjectStart,
+        frapu::CollisionObjectSharedPtr& collisionObjectGoal) const
 {
     fcl::ContinuousCollisionRequest request(10,
                                             0.0001,
@@ -146,7 +148,7 @@ bool Obstacle::inCollisionContinuous(frapu::CollisionObjectSharedPtr& collisionO
     return result.is_collide;
 }
 
-double Obstacle::distancePy(boost::python::list& ns)
+double ObstacleImpl::distancePy(boost::python::list& ns)
 {
     std::vector<frapu::CollisionObjectSharedPtr> other_collision_objects;
     for (int i = 0; i < len(ns); ++i) {
@@ -156,7 +158,7 @@ double Obstacle::distancePy(boost::python::list& ns)
     return distance(other_collision_objects);
 }
 
-bool Obstacle::in_collision_discrete(boost::python::list& ns)
+bool ObstacleImpl::in_collision_discrete(boost::python::list& ns)
 {
     std::vector<frapu::CollisionObjectSharedPtr> other_collision_objects;
     for (int i = 0; i < len(ns); ++i) {
@@ -166,7 +168,7 @@ bool Obstacle::in_collision_discrete(boost::python::list& ns)
     return inCollision(other_collision_objects);
 }
 
-bool Obstacle::in_collision_continuous(boost::python::list& ns)
+bool ObstacleImpl::in_collision_continuous(boost::python::list& ns)
 {
 
     frapu::CollisionObjectSharedPtr collision_object_start =
@@ -176,12 +178,12 @@ bool Obstacle::in_collision_continuous(boost::python::list& ns)
     return inCollisionContinuous(collision_object_start, collision_object_goal);
 }
 
-std::vector<double> Obstacle::getStandardDiffuseColor()
+std::vector<double> ObstacleImpl::getStandardDiffuseColor()
 {
     return diffuse_color_;
 }
 
-std::vector<double> Obstacle::getStandardAmbientColor()
+std::vector<double> ObstacleImpl::getStandardAmbientColor()
 {
     return ambient_color_;
 }
