@@ -32,7 +32,7 @@ BoxObstacle::BoxObstacle(std::string name,
     createCollisionObject();
 }
 
-void BoxObstacle::getDimensions(std::vector<double>& dimensions)
+void BoxObstacle::getDimensions(std::vector<double>& dimensions) const
 {
     dimensions.clear();
     dimensions.resize(6);

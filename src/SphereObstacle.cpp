@@ -24,7 +24,7 @@ SphereObstacle::SphereObstacle(std::string name,
     createCollisionObject();
 }
 
-void SphereObstacle::getDimensions(std::vector<double>& dimensions)
+void SphereObstacle::getDimensions(std::vector<double>& dimensions) const
 {
     dimensions.clear();
     dimensions.resize(4);

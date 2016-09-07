@@ -40,20 +40,20 @@ struct ObstacleStruct {
 };
 
 RobotEnvironment::RobotEnvironment():
-    obstacles_(),
     goal_area_(),
     robot_(nullptr),
     generator_(nullptr),
     robot_path_(""),
     config_path_(""),
     environment_path_(""),
-    goal_states_(),
     gravity_constant_(0.0),
     dynamic_model_("lagrange"),
-    environmentInfo_(nullptr)
+    environmentInfo_(nullptr),
+    rewardModel_(nullptr),
+    scene_(nullptr)
 {
     boost::random_device rd;
-    generator_ = std::make_shared<boost::mt19937>(rd());    
+    generator_ = std::make_shared<boost::mt19937>(rd());
 }
 
 std::shared_ptr<Eigen::Distribution<double>> RobotEnvironment::createDistribution(Eigen::MatrixXd& mean,
@@ -87,25 +87,27 @@ std::shared_ptr<boost::mt19937> RobotEnvironment::getRandomGenerator()
     return generator_;
 }
 
-void RobotEnvironment::setObstacles(std::vector<frapu::ObstacleSharedPtr>& obstacles)
+/**void RobotEnvironment::setObstacles(std::vector<frapu::ObstacleSharedPtr>& obstacles)
 {
-    obstacles_ = obstacles;    
+    obstacles_ = obstacles;
     environmentInfo_->obstacles = obstacles;
-}
+}*/
 
 void RobotEnvironment::makeEnvironmentInfo()
 {
     environmentInfo_ = std::make_shared<frapu::EnvironmentInfo>();
-    environmentInfo_->obstacles = obstacles_;    
+    environmentInfo_->scene = scene_;    
     robot_->setEnvironmentInfo(environmentInfo_);
 }
 
-void RobotEnvironment::setEnvironmentInfo(std::shared_ptr<frapu::EnvironmentInfo> &environmentInfo) {
+void RobotEnvironment::setEnvironmentInfo(std::shared_ptr<frapu::EnvironmentInfo>& environmentInfo)
+{
     environmentInfo_ = environmentInfo;
     robot_->setEnvironmentInfo(environmentInfo_);
 }
 
-void RobotEnvironment::updateEnvironment(const frapu::RobotStateSharedPtr &state) {
+void RobotEnvironment::updateEnvironment(const frapu::RobotStateSharedPtr& state)
+{
     robot_->updateRobot(state);
 }
 
@@ -117,11 +119,6 @@ void RobotEnvironment::setRobot(std::shared_ptr<frapu::Robot>& robot)
 std::shared_ptr<frapu::Robot> RobotEnvironment::getRobot()
 {
     return robot_;
-}
-
-void RobotEnvironment::setControlDuration(double control_duration)
-{
-    control_duration_ = control_duration;
 }
 
 void RobotEnvironment::setSimulationStepSize(double simulation_step_size)
@@ -141,39 +138,24 @@ void RobotEnvironment::setNewtonModel()
     robot_->setNewtonModel();
 }
 
-double RobotEnvironment::getControlDuration() const
-{
-    return control_duration_;
-}
-
 double RobotEnvironment::getSimulationStepSize() const
 {
     return simulation_step_size_;
 }
 
-void RobotEnvironment::getObstacles(std::vector<frapu::ObstacleSharedPtr>& obstacles)
+void RobotEnvironment::setScene(frapu::SceneSharedPtr& scene)
 {
-    obstacles.resize(obstacles_.size());
-    for (size_t i = 0; i < obstacles_.size(); i++) {
-        obstacles[i] = obstacles_[i];
-    }
-
+    scene_ = scene;
 }
 
-void RobotEnvironment::getObservableObstacles(std::vector<frapu::ObstacleSharedPtr>& obstacles) const
+frapu::SceneSharedPtr RobotEnvironment::getScene() const
 {
-    std::vector<frapu::ObstacleSharedPtr> observableObstacles;
-    for (size_t i = 0; i < obstacles_.size(); i++) {
-        if (obstacles_[i]->getTerrain()->isObservable()) {
-            observableObstacles.push_back(obstacles_[i]);
-        }
-    }
-
-    obstacles = observableObstacles;
+    return scene_;
 }
 
 bool RobotEnvironment::loadEnvironment(std::string environment_file)
 {
+    scene_ = std::make_shared<frapu::Scene>();
     if (!loadObstaclesXML(environment_file)) {
         cout << "RobotEnvironment: Couldn't load environment" << endl;
         return false;
@@ -196,8 +178,9 @@ bool RobotEnvironment::loadObstaclesXML(std::string& obstacles_file)
         cout << "RobotEnvironment: ERROR: Environment file '" << obstacles_file << "' doesn't exist" << endl;
         return false;
     }
-    obstacles_.clear();    
-    std::vector<ObstacleStruct> obstacles;
+
+    std::vector<frapu::ObstacleSharedPtr> obstacles;
+    std::vector<ObstacleStruct> obstaclesStruct;
     TiXmlDocument xml_doc;
     xml_doc.LoadFile(obstacles_file);
     TiXmlElement* env_xml = xml_doc.FirstChildElement("Environment");
@@ -215,7 +198,7 @@ bool RobotEnvironment::loadObstaclesXML(std::string& obstacles_file)
                     std::string type(geom_xml->Attribute("type"));
                     TiXmlElement* trans_xml = geom_xml->FirstChildElement("Translation");
                     if (trans_xml) {
-                        obstacles.push_back(ObstacleStruct());
+                        obstaclesStruct.push_back(ObstacleStruct());
                         const char* xyz_str = trans_xml->GetText();
                         std::vector<std::string> pieces;
                         std::vector<double> xyz_vec;
@@ -236,9 +219,9 @@ bool RobotEnvironment::loadObstaclesXML(std::string& obstacles_file)
                                 color_vec.push_back(boost::lexical_cast<double>(pieces[i].c_str()));
                             }
 
-                            obstacles[obstacles.size() - 1].d_color.push_back(color_vec[0]);
-                            obstacles[obstacles.size() - 1].d_color.push_back(color_vec[1]);
-                            obstacles[obstacles.size() - 1].d_color.push_back(color_vec[2]);			    
+                            obstaclesStruct[obstaclesStruct.size() - 1].d_color.push_back(color_vec[0]);
+                            obstaclesStruct[obstaclesStruct.size() - 1].d_color.push_back(color_vec[1]);
+                            obstaclesStruct[obstaclesStruct.size() - 1].d_color.push_back(color_vec[2]);
 
                         }
 
@@ -252,16 +235,16 @@ bool RobotEnvironment::loadObstaclesXML(std::string& obstacles_file)
                                 color_vec.push_back(boost::lexical_cast<double>(pieces[i].c_str()));
                             }
 
-                            obstacles[obstacles.size() - 1].a_color.push_back(color_vec[0]);
-                            obstacles[obstacles.size() - 1].a_color.push_back(color_vec[1]);
-                            obstacles[obstacles.size() - 1].a_color.push_back(color_vec[2]);			    
+                            obstaclesStruct[obstaclesStruct.size() - 1].a_color.push_back(color_vec[0]);
+                            obstaclesStruct[obstaclesStruct.size() - 1].a_color.push_back(color_vec[1]);
+                            obstaclesStruct[obstaclesStruct.size() - 1].a_color.push_back(color_vec[2]);
                         }
 
-                        obstacles[obstacles.size() - 1].name = name;
-                        obstacles[obstacles.size() - 1].type = type;
-                        obstacles[obstacles.size() - 1].x = xyz_vec[0];
-                        obstacles[obstacles.size() - 1].y = xyz_vec[1];
-                        obstacles[obstacles.size() - 1].z = xyz_vec[2];
+                        obstaclesStruct[obstaclesStruct.size() - 1].name = name;
+                        obstaclesStruct[obstaclesStruct.size() - 1].type = type;
+                        obstaclesStruct[obstaclesStruct.size() - 1].x = xyz_vec[0];
+                        obstaclesStruct[obstaclesStruct.size() - 1].y = xyz_vec[1];
+                        obstaclesStruct[obstaclesStruct.size() - 1].z = xyz_vec[2];
                         if (type == "box") {
                             TiXmlElement* ext_xml = geom_xml->FirstChildElement("extents");
                             if (ext_xml) {
@@ -275,14 +258,14 @@ bool RobotEnvironment::loadObstaclesXML(std::string& obstacles_file)
                                     }
                                 }
 
-                                obstacles[obstacles.size() - 1].extends.push_back(extends_vec[0]);
-                                obstacles[obstacles.size() - 1].extends.push_back(extends_vec[1]);
-                                obstacles[obstacles.size() - 1].extends.push_back(extends_vec[2]);
+                                obstaclesStruct[obstaclesStruct.size() - 1].extends.push_back(extends_vec[0]);
+                                obstaclesStruct[obstaclesStruct.size() - 1].extends.push_back(extends_vec[1]);
+                                obstaclesStruct[obstaclesStruct.size() - 1].extends.push_back(extends_vec[2]);
                             }
                         } else if (type == "sphere") {
                             TiXmlElement* rad_xml = geom_xml->FirstChildElement("Radius");
                             if (rad_xml) {
-                                obstacles[obstacles.size() - 1].extends.push_back(boost::lexical_cast<double>(rad_xml->GetText()));
+                                obstaclesStruct[obstaclesStruct.size() - 1].extends.push_back(boost::lexical_cast<double>(rad_xml->GetText()));
                             }
                         }
                     }
@@ -317,97 +300,99 @@ bool RobotEnvironment::loadObstaclesXML(std::string& obstacles_file)
                     terrain.traversalCost = cost;
                     terrain.traversable = traversable;
                     terrain.observable = observable;
-                    obstacles[obstacles.size() - 1].terrain = terrain;
+                    obstaclesStruct[obstaclesStruct.size() - 1].terrain = terrain;
                 }
             }
         }
     }
 
-    for (size_t i = 0; i < obstacles.size(); i++) {
-        frapu::TerrainSharedPtr terrain = std::make_shared<frapu::TerrainImpl>(obstacles[i].terrain.name,
-                                          obstacles[i].terrain.traversalCost,
-                                          obstacles[i].terrain.velocityDamping,
-                                          obstacles[i].terrain.traversable,
-                                          obstacles[i].terrain.observable);        
-        if (obstacles[i].type == "box") {
-	    frapu::ObstacleSharedPtr obstacle = std::make_shared<frapu::BoxObstacle>(obstacles[i].name,
-                                 obstacles[i].x,
-                                 obstacles[i].y,
-                                 obstacles[i].z,
-                                 obstacles[i].extends[0],
-                                 obstacles[i].extends[1],
-                                 obstacles[i].extends[2],
-                                 terrain);	    
-            obstacles_.push_back(obstacle);              
+    for (size_t i = 0; i < obstaclesStruct.size(); i++) {
+        frapu::TerrainSharedPtr terrain = std::make_shared<frapu::TerrainImpl>(obstaclesStruct[i].terrain.name,
+                                          obstaclesStruct[i].terrain.traversalCost,
+                                          obstaclesStruct[i].terrain.velocityDamping,
+                                          obstaclesStruct[i].terrain.traversable,
+                                          obstaclesStruct[i].terrain.observable);
+        if (obstaclesStruct[i].type == "box") {
+            frapu::ObstacleSharedPtr obstacle = std::make_shared<frapu::BoxObstacle>(obstaclesStruct[i].name,
+                                                obstaclesStruct[i].x,
+                                                obstaclesStruct[i].y,
+                                                obstaclesStruct[i].z,
+                                                obstaclesStruct[i].extends[0],
+                                                obstaclesStruct[i].extends[1],
+                                                obstaclesStruct[i].extends[2],
+                                                terrain);
+            obstacles.push_back(obstacle);
         }
 
-        else if (obstacles[i].type == "sphere") {
-	    frapu::ObstacleSharedPtr obstacle = std::make_shared<frapu::SphereObstacle>(obstacles[i].name,
-                                 obstacles[i].x,
-                                 obstacles[i].y,
-                                 obstacles[i].z,
-                                 obstacles[i].extends[0],
-                                 terrain);
-            obstacles_.push_back(obstacle); 	    
+        else if (obstaclesStruct[i].type == "sphere") {
+            frapu::ObstacleSharedPtr obstacle = std::make_shared<frapu::SphereObstacle>(obstaclesStruct[i].name,
+                                                obstaclesStruct[i].x,
+                                                obstaclesStruct[i].y,
+                                                obstaclesStruct[i].z,
+                                                obstaclesStruct[i].extends[0],
+                                                terrain);
+            obstacles.push_back(obstacle);
         } else {
             assert(false && "Utils: ERROR: Obstacle has an unknown type!");
         }
 
-        static_cast<frapu::ObstacleImpl*>(obstacles_[obstacles_.size() - 1].get())->setStandardColor(obstacles[i].d_color, obstacles[i].a_color);
+        static_cast<frapu::ObstacleImpl*>(obstacles[obstacles.size() - 1].get())->setStandardColor(obstaclesStruct[i].d_color,
+                obstaclesStruct[i].a_color);
         //obstacles_[obstacles_.size() - 1]->setStandardColor(obstacles[i].d_color, obstacles[i].a_color);
     }
+
+    scene_->setObstacles(obstacles);
 
     return true;
 }
 
-void RobotEnvironment::setGoalStates(std::vector<std::vector<double>>& goal_states)
+void RobotEnvironment::setRewardModel(frapu::RewardModelSharedPtr& rewardModel)
 {
-    goal_states_ = goal_states;
-}
-
-std::vector<std::vector<double>> RobotEnvironment::getGoalStates() const
-{
-    return goal_states_;
+    rewardModel_ = rewardModel;
 }
 
 void RobotEnvironment::generateRandomScene(unsigned int& numObstacles)
 {
-    obstacles_.clear();
+    scene_ = std::make_shared<frapu::Scene>();
+    std::vector<frapu::ObstacleSharedPtr> obstacles(numObstacles);
     std::uniform_real_distribution<double> uniform_dist(-1.0, 4.0);
     std::uniform_real_distribution<double> uniform_distZ(3.0, 6.0);
     for (size_t i = 0; i < numObstacles; i++) {
         double rand_x = uniform_dist(*generator_);
         double rand_y = uniform_dist(*generator_);
         double rand_z = uniform_distZ(*generator_);
-	
-	frapu::TerrainSharedPtr terrain = std::make_shared<frapu::TerrainImpl>("t" + std::to_string(i),
-                                0.0,
-                                0.0,
-                                false,
-                                true);
-        
+
+        frapu::TerrainSharedPtr terrain = std::make_shared<frapu::TerrainImpl>("t" + std::to_string(i),
+                                          0.0,
+                                          0.0,
+                                          false,
+                                          true);
+
         std::string box_name = "b" + std::to_string(i);
-        obstacles_.push_back(std::make_shared<frapu::BoxObstacle>(box_name,
-                             rand_x,
-                             rand_y,
-                             rand_z,
-                             0.25,
-                             0.25,
-                             0.25,
-                             terrain));
+        obstacles[i] = std::make_shared<frapu::BoxObstacle>(box_name,
+                       rand_x,
+                       rand_y,
+                       rand_z,
+                       0.25,
+                       0.25,
+                       0.25,
+                       terrain);
         std::vector<double> diffuseColor( {0.5, 0.5, 0.5, 0.5});
-        static_cast<frapu::ObstacleImpl*>(obstacles_[obstacles_.size() - 1].get())->setStandardColor(diffuseColor, diffuseColor);
+        static_cast<frapu::ObstacleImpl*>(obstacles[obstacles.size() - 1].get())->setStandardColor(diffuseColor, diffuseColor);
         std::vector<double> dims( {rand_x, rand_y, rand_z, 0.25, 0.25, 0.25});
         robot_->addBox(box_name, dims);
 
     }
-    cout << "random scene created " << obstacles_.size();
+
+    scene_->setObstacles(obstacles);
+    cout << "random scene created " << obstacles.size();
 
 }
 
-std::vector<std::vector<double>> RobotEnvironment::loadGoalStatesFromFile(std::string filename)
+std::vector<frapu::RobotStateSharedPtr> RobotEnvironment::loadGoalStatesFromFile(std::string filename)
 {
-    goal_states_.clear();
+    return robot_->loadGoalStatesFromFile(filename);
+    /**goalStates_.clear();
 
     std::ifstream file;
     try {
@@ -427,25 +412,23 @@ std::vector<std::vector<double>> RobotEnvironment::loadGoalStatesFromFile(std::s
             angles.push_back(dub_val);
         }
 
-        goal_states_.push_back(angles);
+        goalStates_.push_back(angles);
     }
     file.clear();
     file.seekg(0, file.beg);
     file.close();
-    return goal_states_;
+    return goalStates_;*/
 
 }
 
 void RobotEnvironment::getGoalArea(std::vector<double>& goal_area)
 {
-    for (auto & k : goal_area_) {
-        goal_area.push_back(k);
-    }
+    return robot_->getGoalArea(goal_area);
 }
 
 void RobotEnvironment::setGoalArea(std::vector<double>& goal_area)
 {
-    goal_area_ = goal_area;
+    goal_area_ = goal_area;    
 }
 
 bool RobotEnvironment::loadGoalArea(std::string& env_file)
@@ -484,8 +467,8 @@ bool RobotEnvironment::loadGoalArea(std::string& env_file)
                 }
             }
         }
-    }
-
+    }   
+    
     return true;
 }
 
@@ -497,11 +480,11 @@ frapu::ObstacleSharedPtr RobotEnvironment::makeObstacle(std::string obstacleName
         bool observable) const
 {
     frapu::TerrainSharedPtr terrain = std::make_shared<frapu::TerrainImpl>("terr",
-                            traversalCost,
-                            0.0,
-                            traversable,
-                            observable);
-    
+                                      traversalCost,
+                                      0.0,
+                                      traversable,
+                                      observable);
+
     frapu::ObstacleSharedPtr obstacle;
     if (obstacleType == "box") {
         obstacle = std::make_shared<frapu::BoxObstacle>(obstacleName,
@@ -532,27 +515,12 @@ frapu::ObstacleSharedPtr RobotEnvironment::makeObstacle(std::string obstacleName
 
 frapu::ObstacleSharedPtr RobotEnvironment::getObstacle(std::string name)
 {
-    for (size_t i = 0; i < obstacles_.size(); i++) {
-        if (obstacles_[i]->getName() == name) {
-            return obstacles_[i];
-        }
-    }
-
-    cout << "RobotEnvironment: Warning: Obstacle '" << name << "' doesn't exist";
-    return nullptr;
+    return scene_->getObstacle(name);    
 }
 
 bool RobotEnvironment::addObstacle(frapu::ObstacleSharedPtr& obstacle)
-{
-    for (size_t i = 0; i < obstacles_.size(); i++) {
-        if (obstacles_[i]->getName() == obstacle->getName()) {
-            cout << "RobotEnvironment addObstacle: Obstacle '" << obstacle->getName() << "' already exist. Replacing current instance." << endl;
-            removeObstacle(obstacle->getName());
-        }
-    }
-
-    obstacles_.push_back(obstacle);
-    environmentInfo_->obstacles.push_back(obstacle);
+{    
+    scene_->addObstacle(obstacle);
     std::vector<double> dimensions;
     static_cast<frapu::ObstacleImpl*>(obstacle.get())->getDimensions(dimensions);
     robot_->addBox(obstacle->getName(), dimensions);
@@ -560,26 +528,12 @@ bool RobotEnvironment::addObstacle(frapu::ObstacleSharedPtr& obstacle)
 
 bool RobotEnvironment::removeObstacles(std::vector<std::string>& obstacle_names)
 {
-    for (auto & k : obstacle_names) {
-        removeObstacle(k);
-    }
-
-    return true;
+    return scene_->removeObstacles(obstacle_names);
 }
 
 bool RobotEnvironment::removeObstacle(std::string obstacleName)
 {
-    for (size_t i = 0; i < obstacles_.size(); i++) {
-        if (obstacles_[i]->getName() == obstacleName) {
-            obstacles_.erase(obstacles_.begin() + i);
-            environmentInfo_->obstacles.erase(environmentInfo_->obstacles.begin() + i);
-            robot_->removeBox(obstacleName);
-            return true;
-        }
-    }
-
-    cout << "RobotEnvironment: Couldn't remove obstacle '" << obstacleName << "'. Obstacle doesn't exist" << endl;
-    return true;
+    return scene_->removeObstacle(obstacleName);
 }
 
 frapu::EnvironmentInfoSharedPtr RobotEnvironment::getEnvironmentInfo() const

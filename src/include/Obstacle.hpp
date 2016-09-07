@@ -105,11 +105,6 @@ public:
      */
     virtual std::vector<double> getStandardAmbientColor();
 
-    /**
-     * Get the obstacle's dimensions
-     */
-    virtual void getDimensions(std::vector<double>& dimensions) = 0;
-
 protected:
     std::vector<double> diffuse_color_;
 

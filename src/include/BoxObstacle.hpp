@@ -33,7 +33,7 @@ public:
 
     virtual void createCollisionObject() override;
 
-    virtual void getDimensions(std::vector<double>& dimensions) override;
+    virtual void getDimensions(std::vector<double>& dimensions) const override;
 
     double pos_x_;
     double pos_y_;
