@@ -24,7 +24,7 @@ if(PKG_CONFIG_FOUND)
 endif()
 
 ############################# LOAD BOOST #############################
-find_package(Boost ${BOOST_MIN_VERSION} REQUIRED COMPONENTS python system thread timer random)
+find_package(Boost ${BOOST_MIN_VERSION} REQUIRED COMPONENTS system thread timer random)
 if (NOT Boost_FOUND)
     set(Boost_INCLUDE_DIRS "${BOOST_INCLUDE_DIRS}")
     IF ( NOT Boost_INCLUDE_DIRS )

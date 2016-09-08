@@ -9,8 +9,6 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/foreach.hpp>
 #include <boost/algorithm/string.hpp>
-#include <boost/python.hpp>
-#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <boost/random.hpp>
 #include <boost/random/random_device.hpp>
 #include "BoxObstacle.hpp"
@@ -109,6 +107,7 @@ public:
         std::vector<double> goal_position( {goal_area_[0], goal_area_[1], goal_area_[2]});
         double goal_radius = goal_area_[3];
         env->getRobot()->setGoalArea(goal_position, goal_radius);
+	env->getRobot()->makeGoal();
 	env->setRewardModel(rewardModel_);
 	env->getRobot()->setupHeuristic(rewardModel_);
         return env;

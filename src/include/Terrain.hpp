@@ -19,7 +19,7 @@ public:
 
     const std::string getName() const;
 
-    const double getTraversalCost() const;
+    const double getTraversalCost() const override;
 
     const double getVelocityDamping() const;
 

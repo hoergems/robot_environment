@@ -1,6 +1,5 @@
 #include "include/Obstacle.hpp"
 #include <iostream>
-#include <boost/python/converter/registry.hpp>
 
 using std::cout;
 using std::endl;
@@ -9,12 +8,11 @@ using std::min;
 using std::max;
 
 using namespace fcl;
-using namespace boost::python;
 
 namespace frapu
 {
 
-template<class T>
+/**template<class T>
 struct VecToList {
     static PyObject* convert(const std::vector<T>& vec) {
         boost::python::list* l = new boost::python::list();
@@ -23,7 +21,7 @@ struct VecToList {
 
         return l->ptr();
     }
-};
+};*/
 
 ObstacleImpl::ObstacleImpl(std::string& name, frapu::TerrainSharedPtr& terrain):
     frapu::Obstacle(name, terrain),
@@ -146,36 +144,6 @@ bool ObstacleImpl::inCollisionContinuous(frapu::CollisionObjectSharedPtr& collis
                            request,
                            result);
     return result.is_collide;
-}
-
-double ObstacleImpl::distancePy(boost::python::list& ns)
-{
-    std::vector<frapu::CollisionObjectSharedPtr> other_collision_objects;
-    for (int i = 0; i < len(ns); ++i) {
-        other_collision_objects.push_back(boost::python::extract<frapu::CollisionObjectSharedPtr>(ns[i]));
-    }
-
-    return distance(other_collision_objects);
-}
-
-bool ObstacleImpl::in_collision_discrete(boost::python::list& ns)
-{
-    std::vector<frapu::CollisionObjectSharedPtr> other_collision_objects;
-    for (int i = 0; i < len(ns); ++i) {
-        other_collision_objects.push_back(boost::python::extract<frapu::CollisionObjectSharedPtr>(ns[i]));
-    }
-
-    return inCollision(other_collision_objects);
-}
-
-bool ObstacleImpl::in_collision_continuous(boost::python::list& ns)
-{
-
-    frapu::CollisionObjectSharedPtr collision_object_start =
-        boost::python::extract<frapu::CollisionObjectSharedPtr>(ns[0]);
-    frapu::CollisionObjectSharedPtr collision_object_goal =
-        boost::python::extract<frapu::CollisionObjectSharedPtr>(ns[1]);
-    return inCollisionContinuous(collision_object_start, collision_object_goal);
 }
 
 std::vector<double> ObstacleImpl::getStandardDiffuseColor()

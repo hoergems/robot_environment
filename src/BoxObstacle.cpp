@@ -8,7 +8,6 @@ using std::min;
 using std::max;
 
 using namespace fcl;
-using namespace boost::python;
 
 namespace frapu
 {

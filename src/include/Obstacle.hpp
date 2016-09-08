@@ -4,9 +4,6 @@
  */
 #ifndef OBSTACLE_HPP_
 #define OBSTACLE_HPP_
-#include <boost/python.hpp>
-#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
-#include <boost/python/wrapper.hpp>
 #include <vector>
 #include <unistd.h>
 #include <memory>
@@ -64,20 +61,8 @@ public:
      */
     bool in_collision(std::vector<double>& point);
 
-    virtual bool in_collision_point(std::vector<double>& point);
-
-    /**
-     * Python interface for discrete collision check
-     */
-    virtual bool in_collision_discrete(boost::python::list& ns);
-
-    /**
-     * Python interface for continuous collision check
-     */
-    virtual bool in_collision_continuous(boost::python::list& ns);
-
-    virtual double distancePy(boost::python::list& ns);
-
+    virtual bool in_collision_point(std::vector<double>& point);    
+    
     /**
      * Gets the external force (proportional to the end effector velocity)
      * the underlying obstacles induces on the end effector.

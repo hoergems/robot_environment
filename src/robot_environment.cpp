@@ -3,7 +3,7 @@
 namespace frapu
 {
 
-template<class T>
+/**template<class T>
 struct VecToList {
     static PyObject* convert(const std::vector<T>& vec) {
         boost::python::list* l = new boost::python::list();
@@ -13,7 +13,7 @@ struct VecToList {
 
         return l->ptr();
     }
-};
+};*/
 
 struct TerrainStruct {
     std::string name;
@@ -467,8 +467,11 @@ bool RobotEnvironment::loadGoalArea(std::string& env_file)
                 }
             }
         }
-    }   
+    }
     
+    std::vector<double> goalPosition({goal_area_[0], goal_area_[1], goal_area_[2]});
+    assert(robot_ && "RobotEnvironment: Error: Robot has not been initialized yet");
+    robot_->setGoalArea(goalPosition, goal_area_[3]);    
     return true;
 }
 
