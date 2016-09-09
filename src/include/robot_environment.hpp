@@ -108,8 +108,7 @@ public:
         double goal_radius = goal_area_[3];
         env->getRobot()->setGoalArea(goal_position, goal_radius);
 	env->getRobot()->makeGoal();
-	env->setRewardModel(rewardModel_);
-	env->getRobot()->setupHeuristic(rewardModel_);
+	env->setRewardModel(rewardModel_);	
         return env;
     }    
 
