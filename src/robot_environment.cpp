@@ -146,6 +146,7 @@ double RobotEnvironment::getSimulationStepSize() const
 void RobotEnvironment::setScene(frapu::SceneSharedPtr& scene)
 {
     scene_ = scene;
+    environmentInfo_->scene = scene;
 }
 
 frapu::SceneSharedPtr RobotEnvironment::getScene() const
