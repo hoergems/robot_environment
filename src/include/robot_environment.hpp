@@ -72,10 +72,15 @@ public:
     template <class RobotType>
     std::shared_ptr<RobotEnvironment> clone() {
         std::shared_ptr<RobotEnvironment> env = std::make_shared<RobotEnvironment>();
-	env->setScene(scene_);
-        env->createRobot<RobotType>(robot_path_, config_path_);
+	env->createRobot<RobotType>(robot_path_, config_path_);
+	env->setScene(scene_);        
+	std::vector<frapu::RobotStateSharedPtr> goalStates = robot_->getGoalStates();
+        env->getRobot()->setGoalStates(goalStates);
+	env->setEnvironmentInfo(environmentInfo_);
+	env->setRewardModel(rewardModel_);	
         env->getRobot()->makeStateSpace();
         env->getRobot()->makeObservationSpace(robot_->getObservationSpace()->getObservationSpaceInfo());
+	env->setGravityConstant(gravity_constant_);
 
         const frapu::ActionSpaceInfo info = robot_->getActionSpace()->getInfo();
         env->getRobot()->makeActionSpace(info);
@@ -94,21 +99,23 @@ public:
         uint64_t seedObs = observationDistribution->_seed;
 
         env->getRobot()->makeProcessDistribution(meanProcess, covarProcess, seedProc);
-        env->getRobot()->makeObservationDistribution(meanObs, covarObs, seedObs);
-	std::vector<frapu::RobotStateSharedPtr> goalStates = robot_->getGoalStates();
-        env->getRobot()->setGoalStates(goalStates);	
-	env->setEnvironmentInfo(environmentInfo_);              
+        env->getRobot()->makeObservationDistribution(meanObs, covarObs, seedObs);		
+	             
         env->setGoalArea(goal_area_);
         if (dynamic_model_ == "newton") {
             env->getRobot()->setNewtonModel();
         }
-
-        env->setGravityConstant(gravity_constant_);
+        
         std::vector<double> goal_position( {goal_area_[0], goal_area_[1], goal_area_[2]});
         double goal_radius = goal_area_[3];
         env->getRobot()->setGoalArea(goal_position, goal_radius);
 	env->getRobot()->makeGoal();
-	env->setRewardModel(rewardModel_);	
+        if (!env->getRobot()->getActionSpace()) {
+	    frapu::ERROR("Action space is NULL!!!!!!!!!!!");
+	}
+	else {
+	    frapu::LOGGING("Action space is fine!");
+	}
         return env;
     }    
 
