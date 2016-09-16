@@ -37,26 +37,26 @@ public:
     void getGoalArea(std::vector<double>& goal_area);
 
     void setGoalArea(std::vector<double>& goal_area);
-    
+
     /**
      * Create the robots
      */
     template <class RobotType> bool createRobot(std::string robotFile, std::string configFile) {
         if (frapu::fileExists(robotFile) && frapu::fileExists(configFile)) {
-	    cout << "config file " << configFile << endl;
+            cout << "config file " << configFile << endl;
             robot_ = std::make_shared<RobotType>(robotFile, configFile);
             robot_->setRandomEngine(randomEngine_);
             robot_path_ = robotFile;
-	    config_path_ = configFile;
-	    cout << "Robot created" << endl;
+            config_path_ = configFile;
+            cout << "Robot created" << endl;            
             return true;
         }
 
         return false;
-    }  
+    }
 
     void setSimulationStepSize(double simulation_step_size);
-    
+
     double getSimulationStepSize() const;
 
     void setGravityConstant(double gravity_constant);
@@ -64,26 +64,26 @@ public:
     void setNewtonModel();
 
     std::shared_ptr<Eigen::Distribution<double>> createDistribution(Eigen::MatrixXd& mean,
-            Eigen::MatrixXd& covar,            
+            Eigen::MatrixXd& covar,
             std::string& type);
 
     template <class RobotType>
     std::shared_ptr<RobotEnvironment> clone() {
         std::shared_ptr<RobotEnvironment> env = std::make_shared<RobotEnvironment>();
         env->setRandomEngine(randomEngine_);
-	env->createRobot<RobotType>(robot_path_, config_path_);
-	env->setScene(scene_);        
-	std::vector<frapu::RobotStateSharedPtr> goalStates = robot_->getGoalStates();
+        env->createRobot<RobotType>(robot_path_, config_path_);
+        env->setScene(scene_);
+        std::vector<frapu::RobotStateSharedPtr> goalStates = robot_->getGoalStates();
         env->getRobot()->setGoalStates(goalStates);
-	env->setEnvironmentInfo(environmentInfo_);
-	env->setRewardModel(rewardModel_);	
+        env->setEnvironmentInfo(environmentInfo_);
+        env->setRewardModel(rewardModel_);
         env->getRobot()->makeStateSpace();
         env->getRobot()->makeObservationSpace(robot_->getObservationSpace()->getObservationSpaceInfo());
-	env->setGravityConstant(gravity_constant_);
+        env->setGravityConstant(gravity_constant_);
 
         const frapu::ActionSpaceInfo info = robot_->getActionSpace()->getInfo();
         env->getRobot()->makeActionSpace(info);
-	double controlDuration = robot_->getControlDuration();
+        double controlDuration = robot_->getControlDuration();
         env->getRobot()->setControlDuration(controlDuration);
         env->setSimulationStepSize(simulation_step_size_);
 
@@ -91,32 +91,29 @@ public:
         std::shared_ptr<Eigen::Distribution<double>> observationDistribution = robot_->getObservationDistribution();
         Eigen::MatrixXd meanProcess = processDistribution->_mean;
         Eigen::MatrixXd covarProcess = processDistribution->_covar;
-        uint64_t seedProc = processDistribution->_seed;
 
         Eigen::MatrixXd meanObs = observationDistribution->_mean;
         Eigen::MatrixXd covarObs = observationDistribution->_covar;
-        uint64_t seedObs = observationDistribution->_seed;
 
-        env->getRobot()->makeProcessDistribution(meanProcess, covarProcess, seedProc);
-        env->getRobot()->makeObservationDistribution(meanObs, covarObs, seedObs);		
-	             
+        env->getRobot()->makeProcessDistribution(meanProcess, covarProcess);
+        env->getRobot()->makeObservationDistribution(meanObs, covarObs);
+
         env->setGoalArea(goal_area_);
         if (dynamic_model_ == "newton") {
             env->getRobot()->setNewtonModel();
         }
-        
+
         std::vector<double> goal_position( {goal_area_[0], goal_area_[1], goal_area_[2]});
         double goal_radius = goal_area_[3];
         env->getRobot()->setGoalArea(goal_position, goal_radius);
-	env->getRobot()->makeGoal();
+        env->getRobot()->makeGoal();
         if (!env->getRobot()->getActionSpace()) {
-	    frapu::ERROR("Action space is NULL!!!!!!!!!!!");
-	}
-	else {
-	    frapu::LOGGING("Action space is fine!");
-	}
+            frapu::ERROR("Action space is NULL!!!!!!!!!!!");
+        } else {
+            frapu::LOGGING("Action space is fine!");
+        }
         return env;
-    }    
+    }
 
     void generateRandomScene(unsigned int& numObstacles);
 
@@ -137,37 +134,37 @@ public:
     bool removeObstacles(std::vector<std::string>& obstacle_names);
 
     void makeEnvironmentInfo();
-    
-    void setEnvironmentInfo(std::shared_ptr<frapu::EnvironmentInfo> &environmentInfo);
+
+    void setEnvironmentInfo(std::shared_ptr<frapu::EnvironmentInfo>& environmentInfo);
 
     frapu::EnvironmentInfoSharedPtr getEnvironmentInfo() const;
-    
-    void updateEnvironment(const frapu::RobotStateSharedPtr &state);
-    
-    void setRewardModel(frapu::RewardModelSharedPtr &rewardModel);
-    
-    void setScene(frapu::SceneSharedPtr &scene);
-    
-    void setRandomEngine(std::default_random_engine &randomEngine);
-    
+
+    void updateEnvironment(const frapu::RobotStateSharedPtr& state);
+
+    void setRewardModel(frapu::RewardModelSharedPtr& rewardModel);
+
+    void setScene(frapu::SceneSharedPtr& scene);
+
+    void setRandomEngine(std::default_random_engine& randomEngine);
+
     frapu::SceneSharedPtr getScene() const;
 
 private:
     std::string robot_path_;
-    
+
     std::string config_path_;
 
     std::string environment_path_;
 
     std::string dynamic_model_;
 
-    double simulation_step_size_;    
+    double simulation_step_size_;
 
-    double gravity_constant_;    
+    double gravity_constant_;
 
     std::shared_ptr<frapu::Robot> robot_;
 
-    std::vector<double> goal_area_;   
+    std::vector<double> goal_area_;
 
     bool loadObstaclesXML(std::string& obstacles_file);
 
@@ -176,9 +173,9 @@ private:
     std::default_random_engine randomEngine_;
 
     frapu::EnvironmentInfoSharedPtr environmentInfo_;
-    
+
     frapu::RewardModelSharedPtr rewardModel_;
-    
+
     frapu::SceneSharedPtr scene_;
 
 };

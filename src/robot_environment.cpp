@@ -41,8 +41,7 @@ struct ObstacleStruct {
 
 RobotEnvironment::RobotEnvironment():
     goal_area_(),
-    robot_(nullptr),
-    generator_(nullptr),
+    robot_(nullptr),    
     robot_path_(""),
     config_path_(""),
     environment_path_(""),
@@ -66,35 +65,11 @@ std::shared_ptr<Eigen::Distribution<double>> RobotEnvironment::createDistributio
 {
     std::shared_ptr<Eigen::Distribution<double>> distr;
     if (type == "MultivariateNormal") {
-        distr = std::make_shared<Eigen::EigenMultivariateNormal<double>>(mean, covar, false, seed);
+        distr = std::make_shared<Eigen::EigenMultivariateNormal<double>>(mean, covar, false);
     }
 
     return distr;
 }
-
-/**std::shared_ptr<Eigen::Distribution<double>> RobotEnvironment::createDistribution(Eigen::MatrixXd& mean,
-        Eigen::MatrixXd& covariance_matrix,
-        unsigned long seed)
-{
-    std::shared_ptr<Eigen::Distribution<double>> distribution =
-        std::make_shared<Eigen::Distribution<double>>(mean, covariance_matrix, false, seed);
-    //distribution->setMean(mean);
-    //distribution->setCovar(covariance_matrix);
-    return distribution;
-}*/
-
-
-
-std::shared_ptr<boost::mt19937> RobotEnvironment::getRandomGenerator()
-{
-    return generator_;
-}
-
-/**void RobotEnvironment::setObstacles(std::vector<frapu::ObstacleSharedPtr>& obstacles)
-{
-    obstacles_ = obstacles;
-    environmentInfo_->obstacles = obstacles;
-}*/
 
 void RobotEnvironment::makeEnvironmentInfo()
 {
@@ -362,9 +337,9 @@ void RobotEnvironment::generateRandomScene(unsigned int& numObstacles)
     std::uniform_real_distribution<double> uniform_dist(-1.0, 4.0);
     std::uniform_real_distribution<double> uniform_distZ(3.0, 6.0);
     for (size_t i = 0; i < numObstacles; i++) {
-        double rand_x = uniform_dist(*generator_);
-        double rand_y = uniform_dist(*generator_);
-        double rand_z = uniform_distZ(*generator_);
+        double rand_x = uniform_dist(randomEngine_);
+        double rand_y = uniform_dist(randomEngine_);
+        double rand_z = uniform_distZ(randomEngine_);
 
         frapu::TerrainSharedPtr terrain = std::make_shared<frapu::TerrainImpl>("t" + std::to_string(i),
                                           0.0,
