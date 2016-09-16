@@ -50,15 +50,18 @@ RobotEnvironment::RobotEnvironment():
     dynamic_model_("lagrange"),
     environmentInfo_(nullptr),
     rewardModel_(nullptr),
-    scene_(nullptr)
+    scene_(nullptr),
+    randomEngine_()
 {
-    boost::random_device rd;
-    generator_ = std::make_shared<boost::mt19937>(rd());
+    
+}
+
+void RobotEnvironment::setRandomEngine(std::default_random_engine &randomEngine) {
+    randomEngine_ = randomEngine;
 }
 
 std::shared_ptr<Eigen::Distribution<double>> RobotEnvironment::createDistribution(Eigen::MatrixXd& mean,
-        Eigen::MatrixXd& covar,
-        unsigned long& seed,
+        Eigen::MatrixXd& covar,        
         std::string& type)
 {
     std::shared_ptr<Eigen::Distribution<double>> distr;

@@ -45,6 +45,7 @@ public:
         if (frapu::fileExists(robotFile) && frapu::fileExists(configFile)) {
 	    cout << "config file " << configFile << endl;
             robot_ = std::make_shared<RobotType>(robotFile, configFile);
+            robot_->setRandomEngine(randomEngine_);
             robot_path_ = robotFile;
 	    config_path_ = configFile;
 	    cout << "Robot created" << endl;
@@ -52,9 +53,7 @@ public:
         }
 
         return false;
-    }   
-
-    std::shared_ptr<boost::mt19937> getRandomGenerator();    
+    }  
 
     void setSimulationStepSize(double simulation_step_size);
     
@@ -65,13 +64,13 @@ public:
     void setNewtonModel();
 
     std::shared_ptr<Eigen::Distribution<double>> createDistribution(Eigen::MatrixXd& mean,
-            Eigen::MatrixXd& covar,
-            unsigned long& seed,
+            Eigen::MatrixXd& covar,            
             std::string& type);
 
     template <class RobotType>
     std::shared_ptr<RobotEnvironment> clone() {
         std::shared_ptr<RobotEnvironment> env = std::make_shared<RobotEnvironment>();
+        env->setRandomEngine(randomEngine_);
 	env->createRobot<RobotType>(robot_path_, config_path_);
 	env->setScene(scene_);        
 	std::vector<frapu::RobotStateSharedPtr> goalStates = robot_->getGoalStates();
@@ -149,6 +148,8 @@ public:
     
     void setScene(frapu::SceneSharedPtr &scene);
     
+    void setRandomEngine(std::default_random_engine &randomEngine);
+    
     frapu::SceneSharedPtr getScene() const;
 
 private:
@@ -172,7 +173,7 @@ private:
 
     bool loadGoalArea(std::string& env_file);
 
-    std::shared_ptr<boost::mt19937> generator_;
+    std::default_random_engine randomEngine_;
 
     frapu::EnvironmentInfoSharedPtr environmentInfo_;
     
