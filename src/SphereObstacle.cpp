@@ -42,7 +42,7 @@ void SphereObstacle::createCollisionObject()
                  0.0, 1.0, 0.0,
                  0.0, 0.0, 1.0);
     Transform3f rotate_translate(rot, trans);
-    collisionObject_ = std::make_shared<fcl::CollisionObject>(fcl::CollisionObject(boost::shared_ptr<CollisionGeometry>(sphere),
+    collisionObject_ = std::make_shared<fcl::CollisionObject>(fcl::CollisionObject(std::shared_ptr<CollisionGeometry>(sphere),
                        rotate_translate));
 
 }
